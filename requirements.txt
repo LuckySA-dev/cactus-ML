@@ -1,0 +1,26 @@
+# ---------------------------------------------------------------------------
+# Phase 1 (เก็บข้อมูล) — ลงแค่นี้ก็เริ่มเก็บภาพได้ ยังไม่ต้องมี PyTorch
+# ---------------------------------------------------------------------------
+requests>=2.31
+Pillow>=10.0
+pillow-heif>=0.18        # ภาพจาก iPhone (.HEIC) — import_manifest.py / แอป
+ImageHash>=4.3
+tqdm>=4.66
+pandas>=2.0
+
+# ---------------------------------------------------------------------------
+# Phase 2+ (เทรนโมเดล) — ลงทีหลังได้
+#
+# ⚠️ RTX 5060 Ti = Blackwell (sm_120) ต้องลง PyTorch แยกด้วย CUDA 12.8:
+#
+#     pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#
+# อย่าลง torch จากไฟล์นี้ และอย่าใช้ `pip install torch` เฉย ๆ
+# ---------------------------------------------------------------------------
+timm>=1.0.0
+scikit-learn>=1.3
+scipy>=1.11              # McNemar test (compare.py)
+matplotlib>=3.8
+seaborn>=0.13
+grad-cam>=1.5
+streamlit>=1.46          # แอป (app/app.py)

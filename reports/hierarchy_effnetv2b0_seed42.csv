@@ -1,0 +1,3 @@
+﻿approach,model,seed,genus_acc,genus_macro_f1,leaf_acc,leaf_macro_f1,sub_acc_given_genus,leaf_acc_astrophytum,leaf_acc_echinopsis,leaf_acc_mammillaria,leaf_acc_parodia,leaf_acc_gymnocalycium
+A_hierarchical,effnetv2b0,42,0.9377,0.9367,0.8617,0.82,0.919,0.8934,0.7609,0.8848,0.7961,0.7895
+B_flat,effnetv2b0,42,0.9418,0.9404,0.8784,0.8279,0.9231,0.877,0.7826,0.8848,0.8447,0.8596

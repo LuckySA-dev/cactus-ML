@@ -1,0 +1,7 @@
+# ตั้งค่า linter เท่านั้น (ไม่ใช่ package) — ตรวจโค้ด: pip install ruff && ruff check src/
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]

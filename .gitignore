@@ -1,0 +1,43 @@
+# ---- ข้อมูลภาพ: อย่า commit เข้า git (ใหญ่เกินไป) ----
+data/raw/
+data/interim/
+data/processed/
+
+data/Cactus_*/
+data/metadata_backup*.csv
+
+# metadata.csv เล็กและสำคัญมาก -> commit ด้วย (ยกเว้นบรรทัดข้างล่างนี้ถ้าไม่ต้องการ)
+!data/metadata.csv
+
+# หน้าตรวจ QC ฝังรูปในไฟล์ (หลายสิบ MB + ภาพมีลิขสิทธิ์ของเจ้าของ) — เก็บแค่ CSV ผลตรวจ
+reports/qc/*.html
+
+# ---- ผลลัพธ์การเทรน ----
+checkpoints/
+*.pt
+*.pth
+*.onnx
+runs/
+reports/figures/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# ผลเทียบก่อนนำเข้าภาพทีม (ประวัติ ไม่ใช่ผลปัจจุบัน)
+reports/pre_field/
+
+# ---- Claude Code: ค่าส่วนตัวของแต่ละเครื่อง ----
+.claude/settings.local.json
+
+# ---- IDE / OS ----
+.vscode/
+.idea/
+.ipynb_checkpoints/
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,58 @@
+{
+  "astrophytum": {
+    "name_th": "แอสโตรไฟตัม",
+    "water": {"summary": "", "detail": ""},
+    "light": {"summary": "", "detail": ""},
+    "soil": {"summary": "", "detail": ""},
+    "common_mistake": "",
+    "reference": ""
+  },
+  "echinocactus": {
+    "name_th": "ถังทอง",
+    "water": {"summary": "", "detail": ""},
+    "light": {"summary": "", "detail": ""},
+    "soil": {"summary": "", "detail": ""},
+    "common_mistake": "",
+    "reference": ""
+  },
+  "echinopsis": {
+    "name_th": "เอคคินอปซิส",
+    "water": {"summary": "", "detail": ""},
+    "light": {"summary": "", "detail": ""},
+    "soil": {"summary": "", "detail": ""},
+    "common_mistake": "",
+    "reference": ""
+  },
+  "gymnocalycium": {
+    "name_th": "ยิมโนคาไลเซียม",
+    "water": {"summary": "", "detail": ""},
+    "light": {"summary": "", "detail": ""},
+    "soil": {"summary": "", "detail": ""},
+    "common_mistake": "",
+    "reference": ""
+  },
+  "mammillaria": {
+    "name_th": "แมมมิลาเรีย",
+    "water": {"summary": "", "detail": ""},
+    "light": {"summary": "", "detail": ""},
+    "soil": {"summary": "", "detail": ""},
+    "common_mistake": "",
+    "reference": ""
+  },
+  "opuntia": {
+    "name_th": "หูกระต่าย",
+    "water": {"summary": "", "detail": ""},
+    "light": {"summary": "", "detail": ""},
+    "soil": {"summary": "", "detail": ""},
+    "common_mistake": "",
+    "reference": ""
+  },
+  "parodia": {
+    "name_th": "พาโรเดีย",
+    "water": {"summary": "", "detail": ""},
+    "light": {"summary": "", "detail": ""},
+    "soil": {"summary": "", "detail": ""},
+    "common_mistake": "",
+    "reference": ""
+  }
+}

@@ -1,0 +1,13 @@
+               precision    recall  f1-score   support
+
+  astrophytum     0.8710    1.0000    0.9310        27
+ echinocactus     0.7500    0.4286    0.5455         7
+   echinopsis     0.0000    0.0000    0.0000         0
+gymnocalycium     1.0000    0.8235    0.9032        34
+  mammillaria     0.7857    0.8462    0.8148        26
+      opuntia     1.0000    1.0000    1.0000        10
+      parodia     0.7857    0.9167    0.8462        12
+
+     accuracy                         0.8707       116
+    macro avg     0.7418    0.7164    0.7201       116
+ weighted avg     0.8847    0.8707    0.8707       116
