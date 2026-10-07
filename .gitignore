@@ -13,10 +13,14 @@ data/metadata_backup*.csv
 reports/qc/*.html
 
 # ---- ผลลัพธ์การเทรน ----
-checkpoints/
+checkpoints/*
 *.pt
 *.pth
 *.onnx
+# ยกเว้น 3 โมเดลที่แอปใช้ (config.APP_MODELS, seed ที่ val ดีสุด) — เก็บด้วย Git LFS (.gitattributes)
+!checkpoints/flat_effnetv2b0_seed44_best.pt
+!checkpoints/flat_effnetb3_seed44_best.pt
+!checkpoints/flat_resnet50_seed43_best.pt
 runs/
 reports/figures/
 

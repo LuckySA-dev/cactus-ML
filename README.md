@@ -68,7 +68,8 @@ streamlit run app/app.py                       # เว็บแอป: อั�
 python -m src.predict photo.jpg                # ทำนายจาก command line
 ```
 
-แอปต้องมี checkpoint ใน `checkpoints/` (ไม่ได้อยู่ใน git เพราะไฟล์ใหญ่) — เทรนเองตามขั้นตอนด้านล่าง
+repo มีโมเดล 3 ตัวที่แอปใช้อยู่แล้วใน `checkpoints/` (เก็บด้วย [Git LFS](https://git-lfs.com) — ติดตั้ง LFS ก่อน clone
+ไม่งั้นได้แค่ไฟล์ pointer) · checkpoint ของ seed อื่น / โมเดลอื่นเทรนเองได้ตามขั้นตอนด้านล่าง
 
 ## ทำซ้ำผลการทดลอง
 
