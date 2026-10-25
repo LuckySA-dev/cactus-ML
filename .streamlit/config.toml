@@ -1,0 +1,17 @@
+# ธีมแอป Streamlit — streamlit run app/app.py (รันจาก project root ไฟล์นี้ถึงจะถูกอ่าน)
+# light เท่านั้น: สีโมเดลในกราฟ (visualize.SERIES) ตรวจ CVD มากับพื้นสว่าง
+[theme]
+base = "light"
+primaryColor = "#2f6b3a"              # เขียวกระบองเพชร
+backgroundColor = "#f4f6ef"           # เขียวซีดแบบโรงเรือน
+secondaryBackgroundColor = "#e8e4d6"  # หินพัมมิส (sidebar / input)
+textColor = "#1d2a1f"
+borderColor = "#d3d8c6"
+# Anuphan อ่านภาษาไทยง่ายบนมือถือ (Google Fonts)
+font = "Anuphan:https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&display=swap"
+
+[client]
+toolbarMode = "minimal"
+
+[server]
+maxUploadSize = 10                    # MB — เท่ากับ API (config.API_MAX_UPLOAD_MB)

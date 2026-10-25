@@ -46,17 +46,21 @@ class CactusFolder(ImageFolder):
         return self.fixed_classes, {c: i for i, c in enumerate(self.fixed_classes)}
 
 
-def build_transforms(mean: tuple, std: tuple) -> tuple[v2.Compose, v2.Compose]:
+def build_transforms(mean: tuple, std: tuple, aug: str = "base") -> tuple[v2.Compose, v2.Compose]:
     """
     (train_tf, eval_tf) — mean/std ต้องมาจาก timm.data.resolve_model_data_config(model) เท่านั้น
+    aug="strong": ครอปกว้างขึ้น (ต้นเล็กในเฟรมแบบภาพถ่ายจริงที่ฟาร์ม) + เบลอ + มุมกล้องเอียง — สียังเท่าเดิม
 
     ห้ามใส่ RandomVerticalFlip (กระบองเพชรมีบน-ล่างชัด) และ hue แรง ๆ (สีใช้แยกสกุล)
     """
     to_tensor = [v2.ToImage(), v2.ToDtype(torch.float32, scale=True), v2.Normalize(mean=mean, std=std)]
+    strong = aug == "strong"
     train_tf = v2.Compose([
-        v2.RandomResizedCrop(IMG_SIZE, scale=(0.7, 1.0)),
+        v2.RandomResizedCrop(IMG_SIZE, scale=(0.35 if strong else 0.7, 1.0)),
         v2.RandomHorizontalFlip(),
         v2.RandomRotation(20),
+        *([v2.RandomPerspective(0.2, p=0.3), v2.RandomApply([v2.GaussianBlur(5, (0.1, 2.0))], p=0.2)]
+          if strong else []),
         v2.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.2, hue=0.02),
         *to_tensor,
         v2.RandomErasing(p=0.25),
@@ -74,6 +78,7 @@ def build_loaders(
     seed: int = SEED,
     root: Path = PROCESSED_DIR,
     classes: list[str] = CLASSES,
+    aug: str = "base",
 ) -> dict[str, DataLoader]:
     """
     {split: DataLoader} เฉพาะ split ที่มีภาพ — train สุ่ม + ใช้ augmentation, split อื่นไม่สุ่ม
@@ -81,7 +86,7 @@ def build_loaders(
 
     ⚠️ Windows: ต้องเรียกจากใต้ if __name__ == "__main__": เท่านั้น
     """
-    train_tf, eval_tf = build_transforms(mean, std)
+    train_tf, eval_tf = build_transforms(mean, std, aug)
     loaders = {}
     for split in splits:
         is_train = split == "train"

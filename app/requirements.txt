@@ -1,0 +1,15 @@
+# สำหรับ deploy แอปบน Streamlit Community Cloud (อ่านไฟล์ข้างไฟล์หลัก app/app.py ก่อนไฟล์ที่ root)
+# torch build CPU (เล็กกว่า build CUDA หลาย GB) · เครื่องเทรน (RTX 50xx) ใช้ requirements.txt ที่ root แทน
+# เวอร์ชันตรงกับที่ทดสอบในเครื่อง (2026-10-25) · Python 3.12 (ตั้งใน Advanced settings ตอน deploy)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.11.0+cpu
+torchvision==0.26.0+cpu
+timm==1.0.29
+streamlit==1.64.0
+Pillow==12.3.0
+pillow-heif==1.8.0
+pandas==3.0.6
+scikit-learn==1.9.1
+matplotlib==3.11.2
+seaborn==0.13.2
+grad-cam==1.5.7          # ดึง opencv-python-headless มาเอง (ไม่ต้องใช้ libGL → ไม่ต้องมี packages.txt)

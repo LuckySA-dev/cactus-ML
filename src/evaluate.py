@@ -69,7 +69,10 @@ def predict_split(model: nn.Module, ckpt: dict, split: str) -> pd.DataFrame:
 
 
 def metrics(df: pd.DataFrame, flat: bool) -> dict:
-    p, rc, f1, _ = precision_recall_fscore_support(df.y_true, df.y_pred, labels=CLASSES, average="macro",
+    # macro เฉลี่ยเฉพาะคลาสที่มีภาพจริงใน split นี้ — realworld_test ยังไม่มี echinopsis ถ้านับด้วยจะได้ F1 = 0
+    # ฟรี ๆ หนึ่งคลาส ตัวเลขต่ำกว่าความจริง (test มีครบทุกคลาส ค่าไม่เปลี่ยน)
+    present = [c for c in CLASSES if c in set(df.y_true)]
+    p, rc, f1, _ = precision_recall_fscore_support(df.y_true, df.y_pred, labels=present, average="macro",
                                                    zero_division=0)
     kept = df.confidence >= CONFIDENCE_THRESHOLD          # ภาพที่แอปจะ "ตอบ" (ที่เหลือตอบว่าไม่แน่ใจ)
     row = {
@@ -81,7 +84,8 @@ def metrics(df: pd.DataFrame, flat: bool) -> dict:
     if flat:                                               # ชั้นย่อย: เฉพาะภาพที่รู้คลาสย่อย
         known = df[df.leaf_true != ""]
         row["leaf_acc"] = (known.pred_class == known.leaf_true).mean()
-        row["leaf_f1"] = f1_score(known.leaf_true, known.pred_class, labels=LEAVES, average="macro", zero_division=0)
+        row["leaf_f1"] = f1_score(known.leaf_true, known.pred_class, average="macro", zero_division=0,
+                                  labels=[c for c in LEAVES if c in set(known.leaf_true)])
     return row
 
 

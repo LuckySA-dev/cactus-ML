@@ -24,3 +24,10 @@ matplotlib>=3.8
 seaborn>=0.13
 grad-cam>=1.5
 streamlit>=1.46          # แอป (app/app.py)
+
+# API หลังบ้าน (api/main.py) + ทดสอบ (tests/)
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9  # รับไฟล์อัปโหลด
+pytest>=8
+httpx>=0.27              # FastAPI TestClient

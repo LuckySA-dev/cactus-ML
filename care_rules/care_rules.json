@@ -1,58 +1,374 @@
 {
+  "_meta": {
+    "status": "ร่างโดย Claude 2026-10-08 · ตรวจซ้ำกับแหล่งอ้างอิง 2026-10-22 (ตัดข้อความที่แหล่งไม่รองรับ) — ทีมต้องตรวจก่อนใช้จริง",
+    "climate_note": "แหล่งอ้างอิงเขียนตามฤดูของเขตหนาว (ฤดูโต = ฤดูร้อน, ฤดูพัก = ฤดูหนาว) — แปลงเป็นฤดูไทย: ช่วงโต = ร้อน/ฝน (มี.ค.–ต.ค.), ช่วงพัก = หนาว (พ.ย.–ก.พ.) · หน้าฝนไทยชื้นมาก ควรวางใต้หลังคากันฝนและให้อากาศถ่ายเท",
+    "structure": "ระดับสกุล = คำแนะนำทั่วไป (ใช้เมื่อชนิดเป็น other หรือโมเดลไม่แน่ใจชนิด) · subclasses = เฉพาะชนิด ช่องที่ไม่ใส่จะใช้ของสกุล"
+  },
   "astrophytum": {
     "name_th": "แอสโตรไฟตัม",
-    "water": {"summary": "", "detail": ""},
-    "light": {"summary": "", "detail": ""},
-    "soil": {"summary": "", "detail": ""},
-    "common_mistake": "",
-    "reference": ""
+    "water": {
+      "summary": "รดเมื่อวัสดุปลูกแห้งสนิทเท่านั้น ช่วงหนาวงดหรือรดน้อยมาก",
+      "detail": "รากฝอยบอบบาง เน่าง่ายถ้าดินชื้นค้าง รดที่ดินรอบต้น ไม่รดลงกลางยอด หน้าฝนควรอยู่ใต้หลังคากันฝน"
+    },
+    "light": {
+      "summary": "แดดรำไร–แดดเต็มวัน",
+      "detail": "แสงน้อยทำให้ต้นยืดเสียทรง ถ้าย้ายไปที่แดดแรงต้องปรับให้ชินทีละน้อย ไม่งั้นผิวไหม้"
+    },
+    "soil": {
+      "summary": "ดินโปร่งเน้นวัสดุแร่ (หินภูเขาไฟ พัมมิส ทรายหยาบ) อินทรียวัตถุน้อย",
+      "detail": "ดินที่อุดมเกินทำให้ต้นยืด ใช้กระถางระบายน้ำดี เปลี่ยนดินทุกประมาณ 2 ปี"
+    },
+    "common_mistake": "รดน้ำบ่อยและวางในที่อับลม → โคนเน่า (ปัญหาเกือบทั้งหมดของสกุลนี้มาจากน้ำเกินและอากาศไม่ถ่ายเท)",
+    "reference": "https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/1464/Astrophytum_asterias ; https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/1845/Astrophytum_myriostigma ; https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/3660/Astrophytum_ornatum",
+    "subclasses": {
+      "asterias": {
+        "name_th": "แอสโตรดาว (Astrophytum asterias)",
+        "water": {
+          "summary": "รดน้อย รอให้ดินแห้งสนิทก่อนทุกครั้ง ช่วงหนาวงดน้ำ",
+          "detail": "รากเล็กเป็นฝอยและอ่อนไหวต่อความชื้น ต้องรดอย่างระมัดระวังเพื่อให้ต้นแน่นไม่ยืด โตช้า (ต้นเพาะเมล็ดใช้เวลาอย่างน้อย ~5 ปีจึงโตเต็มที่)"
+        },
+        "light": {
+          "summary": "แดดรำไร–แดดเต็มวัน (แดดรำไรสีผิวเข้มสวยกว่า)",
+          "detail": "ต้นกล้าไม่ชอบแดดจัดและความแห้ง ต้นที่โตแล้วรับแดดได้มากขึ้น"
+        },
+        "soil": {
+          "summary": "ดินแร่ระบายน้ำดี อินทรียวัตถุ (พีท ฮิวมัส) น้อย",
+          "detail": "ดินอุดมเกินทำให้ต้นยืดสูงผิดทรง (ต้นธรรมชาติจะแบนติดดิน) ใช้ปุ๋ยไนโตรเจนต่ำ โพแทสเซียมช่วยให้ต้นแน่น"
+        },
+        "common_mistake": "ใช้ดินร่วน/ดินถุงอุ้มน้ำ และรดน้ำตามรอบโดยไม่ดูว่าดินแห้งหรือยัง → ต้นยืดและโคนเน่า",
+        "reference": "https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/1464/Astrophytum_asterias"
+      },
+      "myriostigma": {
+        "name_th": "หมวกแก๊ป (Astrophytum myriostigma)",
+        "water": {
+          "summary": "รดเมื่อดินแห้งสนิท ช่วงร้อนรดได้แต่ไม่บ่อย ช่วงหนาวงดน้ำให้แห้ง",
+          "detail": "รากฝอยไม่ชอบความชื้นค้าง · ช่วงพักต้องไม่ให้อากาศชื้นสูง และเน่าง่ายถ้าดินเปียกช่วงพัก"
+        },
+        "light": {
+          "summary": "แดดรำไร–แดดเต็มวัน (แดดรำไรสีผิวเข้มสวยกว่า)",
+          "detail": "ถ้าย้ายไปที่แดดแรงขึ้นต้องค่อย ๆ ปรับให้ชิน ไม่งั้นผิวไหม้"
+        },
+        "soil": {
+          "summary": "ดินแร่ระบายน้ำดี อินทรียวัตถุน้อย",
+          "detail": "ในธรรมชาติขึ้นบนดินหินปูนที่เป็นกรวด (เป็นพืชชอบดินหินปูน) · ในกระถางเน้นดินแร่ระบายน้ำดี อินทรียวัตถุน้อย"
+        },
+        "common_mistake": "ปล่อยให้ดินชื้นในช่วงอากาศเย็นชื้น/หน้าฝนต่อเนื่อง → เน่าจากโคน",
+        "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/1845/Astrophytum_myriostigma"
+      },
+      "ornatum": {
+        "name_th": "ออร์นาตัม (Astrophytum ornatum)",
+        "water": {
+          "summary": "ช่วงร้อนรดประมาณสัปดาห์ละครั้ง (ดินต้องแห้งก่อน) ช่วงหนาวงดน้ำ",
+          "detail": "งดน้ำเมื่ออากาศกลางคืนต่ำกว่า ~10°C · ต้นในกระถางใหญ่ให้น้ำน้อยกว่าปกติ"
+        },
+        "light": {
+          "summary": "ชอบแดดมาก (แดดเต็มวัน) ทนร่มรำไรได้เล็กน้อย",
+          "detail": "แสงไม่พอทำให้โตไม่ดีและทรงผิดธรรมชาติ"
+        },
+        "soil": {
+          "summary": "ดินแคคตัสแบบทราย-กรวด โปร่ง ระบายน้ำดีมาก",
+          "detail": "ต้องการอากาศถ่ายเทดี — ปัญหาส่วนใหญ่เกิดจากน้ำเกินร่วมกับอับลม โดยเฉพาะช่วงอากาศครึ้ม ชื้น"
+        },
+        "common_mistake": "วางในที่อับลม + ดินชื้นช่วงฟ้าครึ้ม → เน่า · ระวังไรแดง และเพลี้ยแป้งทั้งบนต้นและที่ราก",
+        "reference": "https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/3660/Astrophytum_ornatum"
+      }
+    }
   },
   "echinocactus": {
-    "name_th": "ถังทอง",
-    "water": {"summary": "", "detail": ""},
-    "light": {"summary": "", "detail": ""},
-    "soil": {"summary": "", "detail": ""},
-    "common_mistake": "",
-    "reference": ""
+    "name_th": "ถังทอง (Echinocactus / Kroenleinia grusonii)",
+    "water": {
+      "summary": "รดให้ชุ่มเมื่อดินแห้งสนิท (รดชุ่ม-รอแห้ง) ช่วงหนาวรดน้อยมาก",
+      "detail": "หลังเปลี่ยนกระถางเว้นน้ำอย่างน้อย 1 สัปดาห์ · อย่าให้ต้นเปียกน้ำแล้วโดนแดดจัด อาจเกิดแผลไหม้และติดเชื้อรา"
+    },
+    "light": {
+      "summary": "แดดเต็มวัน–แดดครึ่งวัน",
+      "detail": "แสงดีทำให้หนามเหลืองเงาและต้นกลมแน่น แสงน้อยต้นยืด · ถ้าย้ายจากที่ร่มไปแดดจัดต้องค่อย ๆ ปรับให้ชิน"
+    },
+    "soil": {
+      "summary": "ดินระบายน้ำดีมาก (หินภูเขาไฟ พัมมิส กรวด) อินทรียวัตถุน้อย",
+      "detail": "ถ้าดินชื้นค้างจะเกิดยอดเน่าและเน่าเละ เปลี่ยนดินทุกประมาณ 2 ปี"
+    },
+    "common_mistake": "วางในที่แสงน้อย (ต้นยืด หนามซีด) และรดน้ำบ่อยช่วงหน้าฝน · ระวังเพลี้ยแป้งและไรแดง",
+    "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/3345/Echinocactus_grusonii ; https://www.succulentsandsunshine.com/types-of-succulents/echinocactus-grusonii-golden-barrel-cactus/"
   },
   "echinopsis": {
     "name_th": "เอคคินอปซิส",
-    "water": {"summary": "", "detail": ""},
-    "light": {"summary": "", "detail": ""},
-    "soil": {"summary": "", "detail": ""},
-    "common_mistake": "",
-    "reference": ""
+    "water": {
+      "summary": "ช่วงร้อน/ฝนรดปานกลาง–มากเมื่อดินแห้ง ช่วงหนาวรดน้อย",
+      "detail": "เป็นสกุลที่ทนการดูแลผิดพลาดได้ดี แต่ยังเน่าได้ถ้าดินแฉะนาน"
+    },
+    "light": {
+      "summary": "แดดจัด–แดดครึ่งวัน เลี่ยงแดดบ่ายร้อนจัด",
+      "detail": "แสงดีช่วยให้ออกดอก แสงกรองหรือร่มช่วงบ่ายช่วยกันไหม้"
+    },
+    "soil": {
+      "summary": "ดินแคคตัสโปร่ง ค่อนไปทางกรดอ่อน ไม่ใส่หินปูน",
+      "detail": "ต้นที่ปลูกในดินแร่และอากาศถ่ายเทดีแทบไม่มีปัญหาแมลง"
+    },
+    "common_mistake": "เลี้ยงในที่แสงน้อยจนไม่ออกดอก · ไรแดง เพลี้ยแป้ง และแมลงเกล็ด",
+    "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/8376/Echinopsis_oxygona ; https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/8692/Echinopsis_chamaecereus",
+    "subclasses": {
+      "oxygona": {
+        "name_th": "เอคคินอปซิส ออกซิโกนา (Echinopsis oxygona)",
+        "water": {
+          "summary": "ช่วงร้อน/ฝนรดปานกลาง–มากเมื่อดินแห้ง ช่วงหนาวให้แห้ง",
+          "detail": "โตเร็วและแตกหน่อง่าย ทนต่อการดูแลผิดพลาดได้ดีมาก (ศัตรูหลักในต่างประเทศคือความหนาว)"
+        },
+        "light": {
+          "summary": "แสงจ้า–แดดครึ่งวัน เลี่ยงแดดบ่ายร้อนจัด",
+          "detail": "แสงดีกระตุ้นการออกดอก ดอกใหญ่ หอม บานตอนค่ำ อยู่ได้ราว 1 วัน"
+        },
+        "soil": {
+          "summary": "ดินแคคตัสโปร่ง ค่อนไปทางกรดอ่อน หินปูนน้อย",
+          "detail": "ช่วงร้อนให้ปุ๋ยโพแทสเซียมสูงช่วยให้ออกดอกดก"
+        },
+        "common_mistake": "ให้ปุ๋ยไนโตรเจนสูง/แสงไม่พอ → ต้นโตแต่ไม่ออกดอก · ระวังไรแดง เพลี้ยแป้ง แมลงเกล็ด",
+        "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/8376/Echinopsis_oxygona"
+      },
+      "chamaecereus": {
+        "name_th": "ถั่วลิสง (Echinopsis chamaecereus)",
+        "water": {
+          "summary": "ช่วงร้อนรดปานกลาง ช่วงหนาวงดน้ำ",
+          "detail": "เน่าง่ายถ้าดินแฉะ โดยเฉพาะตอนอากาศเย็นและชื้น"
+        },
+        "light": {
+          "summary": "ที่แดดดี",
+          "detail": "ต้องมีช่วงพักที่เย็นและแห้ง (ช่วงหนาวของไทย) จึงจะออกดอกสีแดงดก"
+        },
+        "soil": {
+          "summary": "ดินโปร่งมาก — ทราย/พัมมิสอย่างน้อย 50% ค่อนไปทางกรดอ่อน",
+          "detail": "ปลูกได้ทั้งกระถางและกระถางแขวน กิ่งแตกจากโคน ตัดชำขยายพันธุ์ได้ง่าย"
+        },
+        "common_mistake": "ไรแดง (โดยเฉพาะต้นเล็ก — ผิวเป็นจุดซีด/สีน้ำตาล) · รดน้ำช่วงหนาวจนเน่า",
+        "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/8692/Echinopsis_chamaecereus"
+      }
+    }
   },
   "gymnocalycium": {
     "name_th": "ยิมโนคาไลเซียม",
-    "water": {"summary": "", "detail": ""},
-    "light": {"summary": "", "detail": ""},
-    "soil": {"summary": "", "detail": ""},
-    "common_mistake": "",
-    "reference": ""
+    "water": {
+      "summary": "ช่วงร้อน/ฝนรดปานกลาง–มากเมื่อดินแห้ง อย่าให้แฉะ ช่วงหนาวให้แห้ง",
+      "detail": "สกุลนี้เน่าง่ายถ้ารดน้ำเกินหรืออากาศไม่ถ่ายเท"
+    },
+    "light": {
+      "summary": "แสงกรอง/แดดเช้า เลี่ยงแดดเที่ยงจัด",
+      "detail": "ทนที่สว่างจ้าได้ แต่ชอบแสงกรองหรือร่มช่วงบ่าย แดดเที่ยงแรงนานทำให้ผิวไหม้"
+    },
+    "soil": {
+      "summary": "ดินแคคตัสโปร่ง ค่อนไปทางกรด ไม่ใส่หินปูน",
+      "detail": "ดินที่มีหินปูนมากทำให้ต้นหยุดโต"
+    },
+    "common_mistake": "รดน้ำแฉะ + อับลม → เน่า · ระวังไรแดง เพลี้ยแป้ง แมลงเกล็ด",
+    "reference": "https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/11929/Gymnocalycium_mihanovichii",
+    "subclasses": {
+      "colored": {
+        "name_th": "ยิมโนหัวสี (G. mihanovichii 'Hibotan' เสียบตอ)",
+        "water": {
+          "summary": "รดน้อย รอดินแห้งสนิทก่อน ช่วงหนาวให้แห้ง",
+          "detail": "หัวสีกินอาหารจากตอ (ส่วนใหญ่เป็นตอสามเหลี่ยม Hylocereus) — ดูแลรากและตอให้แข็งแรงคือหัวใจ"
+        },
+        "light": {
+          "summary": "ที่สว่างแต่ไม่โดนแดดตรงนาน (แสงกรอง/แดดเช้าสั้น ๆ)",
+          "detail": "หัวไม่มีคลอโรฟิลล์ สังเคราะห์แสงเองไม่ได้ และไหม้แดดง่าย แต่ตอยังต้องการแสงพอสมควร"
+        },
+        "soil": {
+          "summary": "ดินโปร่งระบายน้ำดี อินทรียวัตถุน้อย",
+          "detail": "ช่วงร้อนให้ปุ๋ยโพแทสเซียมสูงได้"
+        },
+        "common_mistake": "นำไปตากแดดจัดเหมือนแคคตัสทั่วไป → หัวไหม้ · ตอเน่า = หัวตายตาม · ต้นเสียบตอส่วนใหญ่อยู่ได้ราว 2–3 ปี ถ้าไม่เสียบตอใหม่",
+        "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/11950/Gymnocalycium_mihanovichii_cv._Hibotan ; https://plants.ces.ncsu.edu/plants/gymnocalycium-mihanovichii/common-name/moon-cactus/ ; https://uaex.uada.edu/yard-garden/resource-library/plant-week/Grafted-Cactus-Neon-Cacti-Moon-Cactus-Hibotan-Cactus-11-27-2015.aspx"
+      },
+      "variegated": {
+        "name_th": "ยิมโนด่าง (G. mihanovichii 'Nishiki')",
+        "water": {
+          "summary": "รดน้อย ช่วงร้อนรอดินแห้งก่อน ช่วงหนาวให้แห้งสนิท",
+          "detail": "ต้นด่างที่ยังมีสีเขียวบางส่วนอยู่บนรากตัวเองได้ แต่เน่าง่ายถ้าน้ำเกิน"
+        },
+        "light": {
+          "summary": "ร่มรำไร/แสงกรอง ห้ามโดนแดดตรงนาน",
+          "detail": "ทนแดดตรงนาน ๆ ไม่ได้ โดยเฉพาะวันที่ร้อนจัด"
+        },
+        "soil": {
+          "summary": "ดินแคคตัสโปร่งมาก กระถางระบายน้ำดี",
+          "detail": "ช่วงร้อนให้ปุ๋ยโพแทสเซียมสูง"
+        },
+        "common_mistake": "วางกลางแดดหน้าร้อน → ส่วนด่างไหม้เป็นแผลถาวร",
+        "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/11950/Gymnocalycium_mihanovichii_cv._Hibotan"
+      },
+      "normal": {
+        "name_th": "ยิมโนปกติ (สีเขียว)",
+        "water": {
+          "summary": "ช่วงร้อน/ฝนรดปานกลาง–มากเมื่อดินแห้ง ช่วงหนาวให้แห้ง",
+          "detail": "เน่าง่ายถ้ารดน้ำเกินหรืออับลม"
+        },
+        "light": {
+          "summary": "แสงกรอง/แดดเช้า ทนแสงจ้าได้ แต่เลี่ยงแดดเที่ยง",
+          "detail": "แสงจัดช่วยให้ออกดอก แต่แดดกลางวันแรงนานอาจไหม้"
+        },
+        "soil": {
+          "summary": "ดินแคคตัสโปร่ง ค่อนไปทางกรด ไม่ใส่หินปูน",
+          "detail": "ดินที่มีหินปูนมากทำให้ต้นหยุดโต"
+        },
+        "common_mistake": "แฉะ + อับลม → เน่า · ไรแดง (ฉีดน้ำที่ต้นช่วยได้) เพลี้ยแป้ง แมลงเกล็ด",
+        "reference": "https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/11929/Gymnocalycium_mihanovichii"
+      }
+    }
   },
   "mammillaria": {
     "name_th": "แมมมิลาเรีย",
-    "water": {"summary": "", "detail": ""},
-    "light": {"summary": "", "detail": ""},
-    "soil": {"summary": "", "detail": ""},
-    "common_mistake": "",
-    "reference": ""
+    "water": {
+      "summary": "รดเมื่อดินแห้งสนิท ช่วงร้อนรดสม่ำเสมอ ช่วงหนาวรดน้อย/งด",
+      "detail": "สกุลใหญ่ เกือบทุกชนิดเน่าง่ายถ้าดินชื้นค้าง ใช้กระถางที่พอดีต้น ไม่ใหญ่เกิน"
+    },
+    "light": {
+      "summary": "แสงมากที่สุดเท่าที่ไม่ไหม้ (แดดรำไร–แดดเต็มวันที่ปรับให้ชินแล้ว)",
+      "detail": "แสงดีทำให้หนามแน่นสวยและออกดอก"
+    },
+    "soil": {
+      "summary": "ดินแร่โปร่ง อินทรียวัตถุน้อย กระถางระบายน้ำดี",
+      "detail": "เปลี่ยนดินทุก 2–3 ปี"
+    },
+    "common_mistake": "รดน้ำบ่อย/กระถางใหญ่เกินจนดินชื้นค้าง → เน่า · เพลี้ยแป้ง (ทั้งที่ยอดอ่อนและที่ราก) ไรแดง",
+    "reference": "https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/9106/Mammillaria_elongata ; https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/9303/Mammillaria_prolifera",
+    "subclasses": {
+      "elongata": {
+        "name_th": "แมมก้างปลา (Mammillaria elongata)",
+        "water": {
+          "summary": "ช่วงร้อนรดสม่ำเสมอเมื่อดินแห้ง ช่วงหนาวรดน้อยหรืองด",
+          "detail": "เลี้ยงง่ายและโตค่อนข้างเร็ว แต่รากเสียง่ายถ้ากระถางชื้นค้างนาน"
+        },
+        "light": {
+          "summary": "แสงมากที่สุดเท่าที่ไม่ไหม้",
+          "detail": "แสงมากช่วยให้หนามขึ้นแน่นและสีสวย"
+        },
+        "soil": {
+          "summary": "ดินแร่โปร่ง อินทรียวัตถุน้อย",
+          "detail": "ใช้กระถางระบายน้ำดี ไม่ใหญ่เกินต้น"
+        },
+        "common_mistake": "รดน้ำมากเกิน/กระถางชื้นค้าง → รากเสียและเน่า",
+        "reference": "https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/9106/Mammillaria_elongata"
+      },
+      "plumosa": {
+        "name_th": "แมมขนนก (Mammillaria plumosa)",
+        "water": {
+          "summary": "ห้ามรดจากด้านบน — รดที่ดินหรือให้น้ำทางก้นกระถาง",
+          "detail": "ขนนุ่มคล้ายขนนกอุ้มน้ำไว้ ทำให้เน่าและขนเสียทรง · ช่วงร้อนต้องการน้ำสม่ำเสมอ ช่วงหนาวอย่าให้แห้งจนเกินไป"
+        },
+        "light": {
+          "summary": "แดดเต็มวัน–แดดรำไร อากาศถ่ายเทดี",
+          "detail": "ในที่สว่างและลมโกรกดี มักโตได้โดยไม่มีปัญหา"
+        },
+        "soil": {
+          "summary": "ดินระบายน้ำดีมาก",
+          "detail": "รากเสียง่ายถ้ากระถางชื้นนาน"
+        },
+        "common_mistake": "รดน้ำโดนตัวต้นหรือปล่อยตากฝน → ขนอุ้มน้ำแล้วเน่า",
+        "reference": "https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/9350/Mammillaria_plumosa"
+      },
+      "prolifera": {
+        "name_th": "แมมโปรลิเฟอรา (Mammillaria prolifera)",
+        "water": {
+          "summary": "ช่วงร้อนรดสม่ำเสมอเมื่อดินแห้ง ช่วงหนาวให้แห้ง อากาศถ่ายเท",
+          "detail": "ไวต่อความชื้นค้างมาก เน่าได้ถ้ากระถางชื้นนาน"
+        },
+        "light": {
+          "summary": "แสงจ้า + แดดตรงบางส่วน",
+          "detail": "แดดแรงนานอาจไหม้ ผิวออกสีบรอนซ์เมื่อโดนแสงจัด ซึ่งช่วยให้ออกดอกและหนามสวย"
+        },
+        "soil": {
+          "summary": "ดินแคคตัสโปร่งมาก อินทรียวัตถุน้อย กระถางลึกพอสำหรับรากแก้ว",
+          "detail": "ใช้กระถางเล็กไว้ก่อน (เน่าง่าย) เปลี่ยนดินทุก 2–3 ปี · แตกกอง่าย ตัดหน่อปักชำได้"
+        },
+        "common_mistake": "กระถางใหญ่เกิน/ดินชื้นค้าง → เน่า · ไรแดง และเพลี้ยแป้งที่ยอดอ่อนและราก",
+        "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/9303/Mammillaria_prolifera"
+      },
+      "vetula": {
+        "name_th": "แมมเวทูลา (Mammillaria vetula รวม 'Arizona Snowcap')",
+        "water": {
+          "summary": "ช่วงร้อนรดน้อย ช่วงหนาวงดน้ำ",
+          "detail": "ทนแล้งนานได้ดี ตั้งตัวแล้วอยู่กระถางเดิมได้หลายปี"
+        },
+        "light": {
+          "summary": "แดดเต็มวัน (ทรงแน่นสวยที่สุด) ทนร่มปานกลาง",
+          "detail": "ต้นที่เลี้ยงในร่มต้องค่อย ๆ ปรับให้ชินแดดก่อน ถ้าย้ายทันทีจะไหม้รุนแรง"
+        },
+        "soil": {
+          "summary": "ดินแร่ ระบายน้ำดีเป็นสิ่งจำเป็น",
+          "detail": "แตกหน่อจากด้านข้างและบนยอดมาก ตัดหน่อปักชำได้ช่วงร้อน"
+        },
+        "common_mistake": "ย้ายจากที่ร่มไปแดดจัดทันที → ไหม้ · เลี้ยงในที่แสงน้อยจนต้นยืดเสียทรง",
+        "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/9161/Mammillaria_vetula ; https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/14770/Mammillaria_vetula_subs._gracilis_cv._Arizona_Snowcap"
+      }
+    }
   },
   "opuntia": {
-    "name_th": "หูกระต่าย",
-    "water": {"summary": "", "detail": ""},
-    "light": {"summary": "", "detail": ""},
-    "soil": {"summary": "", "detail": ""},
-    "common_mistake": "",
-    "reference": ""
+    "name_th": "หูกระต่าย (Opuntia microdasys)",
+    "water": {
+      "summary": "รดให้ชุ่มแล้วรอดินแห้งสนิท ช่วงหนาวรดห่างขึ้น (พอไม่ให้ใบเหี่ยวย่น)",
+      "detail": "ดินที่ชื้นค้างทำให้รากเน่า"
+    },
+    "light": {
+      "summary": "แดดเต็มวัน–แดดรำไร",
+      "detail": "แสงน้อยทำให้ใบ (แผ่นต้น) ยืดยาวเสียทรง"
+    },
+    "soil": {
+      "summary": "ดินแคคตัสโปร่ง ระบายน้ำดี",
+      "detail": "แผ่นใบที่หลุดปักชำได้ง่าย (ผึ่งแผลให้แห้งก่อน รากออกใน ~1 เดือน)"
+    },
+    "common_mistake": "จับด้วยมือเปล่า — ขนหนามเล็ก (glochids) หลุดติดผิวง่าย มองเห็นยากและระคายเคือง ใส่ถุงมือหรือใช้คีมทุกครั้ง",
+    "reference": "https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/15506/Opuntia_microdasys"
   },
   "parodia": {
     "name_th": "พาโรเดีย",
-    "water": {"summary": "", "detail": ""},
-    "light": {"summary": "", "detail": ""},
-    "soil": {"summary": "", "detail": ""},
-    "common_mistake": "",
-    "reference": ""
+    "water": {
+      "summary": "ต้องการน้ำมากกว่าแคคตัสทะเลทราย — ช่วงร้อนรดสม่ำเสมอเมื่อดินแห้ง ช่วงหนาวเกือบแห้ง",
+      "detail": "ถ้าดินแฉะร่วมกับอากาศเย็น หรือแฉะร่วมกับแสงน้อย จะเน่า"
+    },
+    "light": {
+      "summary": "แดดเต็มวัน เลี่ยงเฉพาะแดดที่ร้อนจัดที่สุด",
+      "detail": "แสงน้อยทำให้ต้นยืด เน่าง่าย และไม่ออกดอก"
+    },
+    "soil": {
+      "summary": "ดินแร่โปร่ง ระบายน้ำดี ค่อนไปทางกรดอ่อน",
+      "detail": "อย่าใช้กระถางใหญ่เกิน ดินจะค้างน้ำ เปลี่ยนดินทุก 2–3 ปี"
+    },
+    "common_mistake": "แสงไม่พอ + รดน้ำมาก หรือดินแฉะช่วงอากาศเย็น → ต้นยืดและเน่า",
+    "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/14697/Parodia_leninghausii ; https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/20453/Parodia_magnifica",
+    "subclasses": {
+      "lenninghausii": {
+        "name_th": "พาโรเดียเลนนิงเฮาซิไอ (Yellow tower)",
+        "water": {
+          "summary": "ช่วงร้อนรดสม่ำเสมอ (อากาศยิ่งร้อนยิ่งรดบ่อยขึ้น) ถ้ากระถางระบายน้ำดี ช่วงหนาวเกือบแห้ง",
+          "detail": "ต้องการช่วงพักสั้น ๆ ช่วงหนาว · ทนร้อนได้ดี (กลางแจ้ง >30°C ไม่เป็นไร)"
+        },
+        "light": {
+          "summary": "แดดเต็มวัน เลี่ยงแดดที่ร้อนจัดที่สุดของหน้าร้อน",
+          "detail": "แสงน้อยทำให้ต้นยืดและไม่ออกดอก · ออกดอกเมื่อต้นโตพอ (สูงราว 20 ซม. ขึ้นไป)"
+        },
+        "soil": {
+          "summary": "ดินแร่โปร่งที่รากหายใจได้ ระบายน้ำดี",
+          "detail": "เปลี่ยนดินทุก 2–3 ปี ไม่ต้องทุกปี เพื่อไม่ให้ดินแน่นอับ"
+        },
+        "common_mistake": "วางในที่แสงน้อยแล้วรดน้ำมาก / ใช้กระถางใหญ่เกิน → ต้นยืดและเน่า",
+        "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/14697/Parodia_leninghausii"
+      },
+      "magnifica": {
+        "name_th": "พาโรเดียแมกนิฟิกา (Parodia magnifica)",
+        "water": {
+          "summary": "ช่วงร้อนรดสม่ำเสมอเมื่อดินแห้ง ช่วงหนาวเกือบแห้ง",
+          "detail": "ทนแล้งได้ดี แต่ต้องการดินที่ระบายน้ำดีมากเพื่อกันเน่า"
+        },
+        "light": {
+          "summary": "แดดเต็มวัน ทนร่มปานกลาง",
+          "detail": "ต้นที่อยู่ในร่มต้องค่อย ๆ ปรับให้ชินแดด ไม่งั้นไหม้"
+        },
+        "soil": {
+          "summary": "ดินโปร่งมาก เน้นวัสดุแร่ (หินภูเขาไฟ พัมมิส) ค่อนไปทางกรด (pH 4.5–6)",
+          "detail": "ใช้กระถางลึกที่ระบายน้ำดี เปลี่ยนดินทุก 2 ปี"
+        },
+        "common_mistake": "ดินไม่โปร่ง/อากาศไม่ถ่ายเท → เน่า (ยาเชื้อราช่วยได้น้อย ต้องป้องกันด้วยการดูแลที่ถูกต้อง)",
+        "reference": "https://www.llifle.com/Encyclopedia/CACTI/Family/Cactaceae/20453/Parodia_magnifica"
+      }
+    }
   }
 }

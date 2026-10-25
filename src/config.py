@@ -149,6 +149,12 @@ STAGE1 = {"epochs": 10, "lr": 1e-3}                                    # freeze 
 # fine-tune ทั้งตัว — lr จูนแล้ว (plan เดิม 1e-5/1e-4 ต่ำเกิน): val F1 0.890 → 0.930±0.005 (3 seeds)
 # ที่มา: docs/tuning.md รอบ 1–3
 STAGE2 = {"epochs": 40, "lr_backbone": 3e-4, "lr_head": 3e-3, "patience": 8}
+# train.py --ema: ค่าเฉลี่ยน้ำหนักแบบเลื่อน (ใช้ใน stage 2) — ~57 step/epoch → half-life ≈ 6 epoch
+EMA_DECAY = 0.998
+# สูตรเทรนหลัก (2026-10-22, docs/tuning.md รอบ 7): EMA + augment แรง ชนะ base ทั้ง 2 seed (val F1 +2.1 จุด)
+# EMA อย่างเดียวแย่ลง · augment แรงอย่างเดียว +1.5 · ปิดได้ด้วย --aug base --no-ema
+TRAIN_AUG = "strong"
+TRAIN_EMA = True
 
 LOG_DIR     = REPORT_DIR / "logs"
 PRED_DIR    = REPORT_DIR / "predictions"   # ผลทำนายรายภาพ → McNemar / วิเคราะห์ภาพที่ผิด โดยไม่ต้องรันใหม่
@@ -208,7 +214,18 @@ CONFIDENCE_THRESHOLD = 0.60
 # โมเดลค่าเริ่มต้นของ predict.py — ใช้ seed ที่ val macro F1 สูงสุด (predict.best_run) ไม่ได้ดู test
 DEPLOY_MODEL = "effnetv2b0"
 # โมเดลที่ให้เลือกในแอป Streamlit (3 อันดับแรกจาก python -m src.compare --summary)
-APP_MODELS = ["effnetv2b0", "effnetb3", "resnet50"]   # 2026-10-07: leaf acc 0.883 / 0.873 / 0.868
+# ภาพถ่ายเองที่ใช้ทำตัวอย่าง augmentation (visualize.fig_augment → แสดงในหน้าประเมินผล)
+AUG_EXAMPLE_IMAGE = DATA_DIR / "raw" / "handon" / "echinocactus" / "handon_Cactus_1_Echinocactus_IMG_5019.jpg"
+TEAM_NAME = "Cactus Classifier by KMUTNB"        # มุมซ้ายบนของแอป (app/logo.svg ใช้ข้อความเดียวกัน)
+APP_MODELS = ["densenet121", "effnetb3", "effnetv2b0"]   # 2026-10-25 หลัง QC ครบทุกภาพ: leaf acc 0.910 / 0.904 / 0.898
+
+# เกณฑ์ที่ใช้เทียบในรายงาน / หน้าประเมินผล
+TARGET_ACC = 0.91          # test accuracy เป้าหมาย (baseline งานวิจัยอ้างอิง)
+REFERENCE_GAP = 0.0986     # gap test − ภาพจริง ของงานวิจัยอ้างอิง (ต่ำกว่า = generalize ดีกว่า)
+
+# API หลังบ้าน (api/main.py) — origin ของหน้าเว็บ frontend ตั้งได้ผ่าน env CORS_ORIGINS (คั่นด้วย ,)
+API_MAX_UPLOAD_MB = 10
+API_CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
 
 # คำแนะนำการดูแล (rule-based ไม่ใช่ ML) — ทีมเขียนเนื้อหา ทุกสกุลต้องมี reference
 CARE_RULES_JSON = PROJECT_ROOT / "care_rules" / "care_rules.json"

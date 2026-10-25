@@ -32,6 +32,7 @@ from matplotlib.lines import Line2D
 from sklearn.metrics import confusion_matrix, f1_score
 
 from src.config import (
+    AUG_EXAMPLE_IMAGE,
     CLASSES,
     CONFIDENCE_THRESHOLD,
     FIGURE_DIR,
@@ -52,8 +53,8 @@ SURFACE, INK, INK2, MUTED, GRID, AXIS = "#fcfcfb", "#0b0b0b", "#52514e", "#89878
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"]
 MODEL_COLOR = dict(zip(MODELS, SERIES, strict=True))
 BLUE_ACCENT, BLUE_LIGHT = "#256abf", "#86b6ef"
-BLUES = LinearSegmentedColormap.from_list(
-    "blues", ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"])
+BLUES_HEX = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]   # sequential (ใช้ในแอปด้วย)
+BLUES = LinearSegmentedColormap.from_list("blues", BLUES_HEX)
 
 
 # ---------------------------------------------------------------------------
@@ -321,7 +322,82 @@ def fig_confidence(preds: pd.DataFrame) -> None:
     save(fig, "confidence")
 
 
+def fig_augment(n: int = 4) -> None:
+    """
+    แผนที่ augmentation: แต่ละแถว = 1 ขั้นของสูตรจริง (บังคับ p = 1 ให้เห็นผล) สุ่ม n แบบ · แถวสุดท้าย = ทุกขั้นรวมกัน
+    ดึงขั้นจาก datasets.build_transforms ตรง ๆ (ไม่เขียนค่าซ้ำ) → แก้สูตรเมื่อไหร่ ภาพนี้ตามทันเอง
+    """
+    import copy
+
+    import torch
+    from torchvision.transforms import v2
+
+    from src.config import TRAIN_AUG
+    from src.datasets import build_transforms, load_image
+
+    torch.manual_seed(SEED)
+    # mean 0 / std 1 → Normalize ไม่เปลี่ยนค่า ภาพที่ได้ดูด้วยตาได้เลย
+    train_tf, eval_tf = build_transforms((0.0, 0.0, 0.0), (1.0, 1.0, 1.0), aug=TRAIN_AUG)
+    image = load_image(AUG_EXAMPLE_IMAGE)
+    base = eval_tf(image)                                     # 224×224 เดียวกับที่โมเดลเห็นตอนทดสอบ
+    tensor_steps = (v2.ToImage, v2.ToDtype, v2.Normalize)
+    steps = []
+    for t in train_tf.transforms:
+        if isinstance(t, tensor_steps):
+            continue
+        t = copy.deepcopy(t)
+        if hasattr(t, "p"):
+            t.p = 1.0
+        inner = t.transforms[0] if isinstance(t, v2.RandomApply) else t
+        steps.append((type(inner).__name__, t))
+
+    def show(ax, img):
+        arr = img.permute(1, 2, 0).clamp(0, 1).numpy() if torch.is_tensor(img) else np.asarray(img)
+        ax.imshow(arr)
+        ax.set_xticks([]), ax.set_yticks([]), ax.grid(False)
+        for s in ax.spines.values():
+            s.set_visible(False)
+
+    thai = ["Leelawadee UI", "Tahoma", "DejaVu Sans"]          # Segoe UI ไม่มีตัวไทย
+
+    def row_label(ax, text, bold=False):
+        ax.set_ylabel(text, rotation=0, ha="right", va="center", fontsize=9, color=INK, labelpad=6,
+                      fontweight="bold" if bold else "normal", fontfamily=thai)
+
+    # RandomResizedCrop ต้องทำกับภาพเต็ม ส่วนขั้นอื่นทำกับภาพ 224 เดียวกัน → เห็นผลของขั้นนั้นอย่างเดียว
+    outputs = {name: [t(image) if name == "RandomResizedCrop" else t(base) for _ in range(n)] for name, t in steps}
+    outputs["all"] = [train_tf(image) for _ in range(n)]
+
+    # แถบสั้นรายขั้น (ต้นฉบับ + สุ่ม n แบบ) — กว้างแต่เตี้ย แสดงใน dropdown ของแต่ละขั้น พอดีจอมือถือ
+    for name, imgs in outputs.items():
+        fig, axes = new_figure(1, n + 1, figsize=(1.5 * (n + 1), 1.75))
+        for ax, img, title in zip(axes, [base, *imgs], ["ต้นฉบับ", *(f"สุ่มครั้งที่ {i}" for i in range(1, n + 1))],
+                                  strict=True):
+            show(ax, img)
+            ax.set_title(title, fontsize=8, fontweight="normal", color=INK2, fontfamily=thai, loc="center")
+        fig.tight_layout(w_pad=0.4)
+        save(fig, f"augment_{name}")
+
+    # แผนที่รวม: แถว = ขั้น · คอลัมน์ = สุ่ม n แบบ (ภาพย่อ ให้ทั้งรูปไม่สูงเกินจอ)
+    rows = len(steps) + 2
+    fig, axes = new_figure(rows, n, figsize=(1.25 * n + 1.5, 1.25 * rows))
+    show(axes[0, 0], base)
+    row_label(axes[0, 0], "ต้นฉบับ", bold=True)
+    for ax in axes[0, 1:]:
+        ax.axis("off")
+    for r, (name, _) in enumerate(steps, start=1):
+        for c, img in enumerate(outputs[name]):
+            show(axes[r, c], img)
+        row_label(axes[r, 0], f"{r}. {name}")
+    for c, img in enumerate(outputs["all"]):
+        show(axes[-1, c], img)
+    row_label(axes[-1, 0], "ทุกขั้นรวมกัน", bold=True)
+    fig.tight_layout(h_pad=0.3, w_pad=0.3)
+    save(fig, "augment")
+
+
 FIGURES = {
+    "augment": fig_augment,
     "dataset": fig_dataset,
     "tuning": fig_tuning,
     "curves": fig_learning_curves,

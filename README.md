@@ -9,20 +9,25 @@
 
 ## ผลลัพธ์
 
-6 สถาปัตยกรรม × 3 seeds · hyperparameter เดียวกันทั้งหมด · test 794 ภาพ · realworld_test 116 ภาพ (ภาพถ่ายเองที่โมเดลไม่เคยเห็น)
+6 สถาปัตยกรรม × 3 seeds · สูตรเทรนเดียวกันทั้งหมด (2 stage + EMA + augment แรง) · ข้อมูลผ่าน QC ด้วยตาครบทุกภาพ ·
+test 750 ภาพ · realworld_test 107 ภาพ (ภาพถ่ายเองที่โมเดลไม่เคยเห็น)
 
 | โมเดล | สกุล · test | ชนิด · test | สกุล · ภาพจริง | Gap | ขนาด | CPU/ภาพ |
 |---|---|---|---|---|---|---|
-| **EfficientNetV2-B0** | **93.9 ± 0.3%** | **88.3 ± 0.4%** | **88.8 ± 0.9%** | 5.1% | 5.9M | 15 ms |
-| EfficientNet-B3 | 93.7 ± 0.4% | 87.3 ± 0.4% | 86.5 ± 3.3% | 7.2% | 10.7M | 23 ms |
-| ResNet50 | 93.2 ± 0.6% | 86.8 ± 0.6% | 87.1 ± 2.6% | 6.2% | 23.5M | 30 ms |
-| MobileNetV3-L | 93.2 ± 0.4% | 86.7 ± 1.1% | 84.2 ± 1.8% | 9.0% | 4.2M | 8 ms |
-| DenseNet-121 | 93.1 ± 0.6% | 86.2 ± 0.9% | 87.4 ± 1.0% | 5.8% | 7.0M | 34 ms |
-| ResNet34 | 93.0 ± 0.5% | 86.0 ± 0.6% | 88.2 ± 1.3% | 4.8% | 21.3M | 23 ms |
+| **DenseNet-121** | 95.8 ± 0.3% | **91.0 ± 0.5%** | 84.4 ± 1.9% | 11.3% | 7.0M | 70 ms |
+| **EfficientNet-B3** | **95.9 ± 0.3%** | 90.4 ± 0.4% | **86.6 ± 2.2%** | 9.3% | 10.7M | 49 ms |
+| **EfficientNetV2-B0** | 95.1 ± 0.2% | 89.8 ± 0.5% | 84.7 ± 0.5% | 10.4% | 5.9M | 34 ms |
+| MobileNetV3-L | 94.6 ± 0.1% | 89.0 ± 0.9% | 83.8 ± 2.4% | 10.8% | 4.2M | 18 ms |
+| ResNet34 | 93.4 ± 0.7% | 88.0 ± 0.7% | 84.7 ± 1.4% | 8.7% | 21.3M | 30 ms |
+| ResNet50 | 93.5 ± 0.5% | 87.7 ± 0.4% | 82.2 ± 1.6% | 11.3% | 23.5M | 59 ms |
 
-- ผ่านเป้า **test accuracy ≥ 91%** ทุกโมเดล · Gap (test − ภาพจริง) 5–9% ต่ำกว่างานวิจัยอ้างอิง (9.86%)
-- ภาพจริงชั้นชนิดยังยากกว่ามาก (EfficientNetV2-B0 73%) — realworld_test มีแค่ 116 ภาพ ตัวเลขแกว่งตาม seed
-- แอปใช้ 3 อันดับแรก (ชนิด · test): EfficientNetV2-B0, EfficientNet-B3, ResNet50
+- ผ่านเป้า **test accuracy ≥ 91%** ทุกโมเดล · Gap (test − ภาพจริง) 8.7–11.3% — EfficientNet-B3 และ ResNet34
+  ต่ำกว่างานวิจัยอ้างอิง (9.86%) ส่วนอีก 4 ตัวสูงกว่าเล็กน้อย
+- QC ครบทุกภาพ (2026-10-24, ตัดภาพดอกบังต้น/หลายสกุล/เบลอ/label ผิด 297 ภาพ) ทำให้ test สะอาดขึ้น → test ขึ้น
+  ภาพจริงลด 1–3 จุด (realworld สุ่มชุดใหม่ 107 ภาพ แกว่งได้ ~±3 จุด) → gap กว้างขึ้น · ผลก่อน QC อยู่ `reports/pre_qc5/`
+- ภาพจริงชั้นชนิดยังยากกว่ามาก (69–72%)
+- แอป/API ใช้ 3 อันดับแรก (ชนิด · test): DenseNet-121, EfficientNet-B3, EfficientNetV2-B0 (seed ที่ val ดีสุด)
+- ความเร็ว CPU วัดตอนเครื่องมีงานอื่นรันอยู่ ใช้เทียบกันเองได้ ไม่ใช่ค่าสัมบูรณ์
 - ตารางเต็ม `reports/model_compare.csv` · กราฟ `reports/figures/` (สร้างด้วย `python -m src.visualize`)
 
 ## โครงสร้าง
@@ -44,7 +49,9 @@ src/
   compare.py           เทียบโมเดล mean ± SD ข้าม seed + McNemar
   visualize.py · gradcam.py                          กราฟรายงาน + Grad-CAM
   predict.py           ภาพ → สกุล + ชนิด + คำแนะนำ (CLI / ใช้ในแอป)
-app/app.py             เว็บแอป Streamlit
+app/                   เว็บแอป Streamlit: app.py (เมนู) · predict_page.py · eval_page.py · ธีมใน .streamlit/
+api/main.py            REST API (FastAPI) สำหรับหน้าเว็บ frontend
+tests/                 ทดสอบ API ด้วยภาพปลอม (pytest)
 docs/                  เหตุผลการเลือกคลาส, บันทึกการจูน
 data/metadata.csv      ทุกภาพ 1 แถว: แหล่งที่มา, license, ต้น, QC, split
 data/manifests/        ผลตรวจภาพที่ทีมรวบรวมเอง (รายภาพ)
@@ -64,9 +71,31 @@ pip install -r requirements.txt
 ## ใช้งาน
 
 ```bash
-streamlit run app/app.py                       # เว็บแอป: อัปโหลด/ถ่ายภาพ เลือกโมเดล หรือเทียบทุกโมเดล
+streamlit run app/app.py                       # เว็บแอป 2 หน้า: ทายชื่อ + วิธีดูแล · ประเมินผลโมเดล (รันจาก project root)
+uvicorn api.main:app --port 8000               # REST API สำหรับหน้าเว็บ — เอกสาร http://localhost:8000/docs
 python -m src.predict photo.jpg                # ทำนายจาก command line
+pytest -q                                      # ทดสอบ API
 ```
+
+| API | ทำอะไร |
+|---|---|
+| `GET /api/health` | เช็กว่าเซิร์ฟเวอร์พร้อม |
+| `GET /api/models` | 3 โมเดลที่ใช้ได้ + คะแนนเฉลี่ย |
+| `POST /api/predict?model=effnetv2b0&gradcam=false` | อัปโหลดภาพ (field `file`) → สกุล + ชนิด + ความมั่นใจ + วิธีดูแล (+ Grad-CAM) |
+| `POST /api/compare?gradcam=false` | ภาพเดียว ทายด้วยทั้ง 3 โมเดล |
+
+frontend ที่รันคนละ origin ต้องตั้ง `CORS_ORIGINS` (ค่าเริ่มต้น `http://localhost:5173,http://localhost:3000`)
+
+### Deploy บน Streamlit Community Cloud
+
+1. push repo ขึ้น GitHub (มีโมเดล 3 ตัวผ่าน Git LFS แล้ว)
+2. [share.streamlit.io](https://share.streamlit.io) → **Create app** → เลือก repo / branch `main`
+3. **Main file path:** `app/app.py` · **Advanced settings → Python:** 3.12
+4. Deploy — Cloud ติดตั้งจาก [`app/requirements.txt`](app/requirements.txt) (torch build CPU, เวอร์ชันล็อกไว้แล้ว)
+   ส่วน [`requirements.txt`](requirements.txt) ที่ root ใช้กับเครื่องเทรนเท่านั้น
+
+ครั้งแรกใช้เวลาติดตั้ง ~5 นาที · ธีมอ่านจาก `.streamlit/config.toml` · ภาพที่ผู้ใช้อัปโหลดไม่ถูกเก็บ
+หน้า "ประเมินผลโมเดล" ทำงานได้โดยไม่มีภาพในเครื่อง (ใช้ `reports/` + `data/metadata.csv`) ยกเว้นแกลเลอรีภาพที่ทายผิด
 
 repo มีโมเดล 3 ตัวที่แอปใช้อยู่แล้วใน `checkpoints/` (เก็บด้วย [Git LFS](https://git-lfs.com) — ติดตั้ง LFS ก่อน clone
 ไม่งั้นได้แค่ไฟล์ pointer) · checkpoint ของ seed อื่น / โมเดลอื่นเทรนเองได้ตามขั้นตอนด้านล่าง

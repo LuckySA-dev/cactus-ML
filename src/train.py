@@ -27,6 +27,7 @@ from collections import defaultdict
 from datetime import datetime
 
 import torch
+from timm.utils import ModelEmaV3
 from torch import nn
 from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler
@@ -34,6 +35,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler
 from src.config import (
     CHECKPOINT_DIR,
     DEVICE,
+    EMA_DECAY,
     LABEL_SMOOTHING,
     LOG_DIR,
     MODELS,
@@ -41,6 +43,8 @@ from src.config import (
     SEED,
     STAGE1,
     STAGE2,
+    TRAIN_AUG,
+    TRAIN_EMA,
     WEIGHT_DECAY,
 )
 from src.datasets import build_loaders
@@ -60,7 +64,7 @@ def run_name(args: argparse.Namespace) -> str:
 
 
 def hparams(args: argparse.Namespace) -> dict:
-    keys = ("epochs1", "lr1", "epochs2", "lr_backbone", "lr_head", "patience", "weight_decay", "balance")
+    keys = ("epochs1", "lr1", "epochs2", "lr_backbone", "lr_head", "patience", "weight_decay", "balance", "aug", "ema")
     hp = {k: getattr(args, k) for k in keys}
     if args.smoke:
         hp |= {"epochs1": 1, "epochs2": 1}
@@ -79,13 +83,14 @@ class Trainer:
         self.model.to(DEVICE, memory_format=torch.channels_last)
         self.cfg = data_config(self.model)
         self.loaders = build_loaders(self.cfg["mean"], self.cfg["std"], splits=["train", "val"], seed=args.seed,
-                                     root=self.task.root, classes=self.task.classes)
+                                     root=self.task.root, classes=self.task.classes, aug=args.aug)
         if set(self.loaders) != {"train", "val"}:
             raise SystemExit("ไม่มีข้อมูล train/val — รัน python -m src.data.split ก่อน")
         self.criterion = nn.CrossEntropyLoss(weight=self._balance(), label_smoothing=LABEL_SMOOTHING)
         self.ckpt_path = CHECKPOINT_DIR / f"{self.name}_best.pt"
         self.log_path = LOG_DIR / f"{self.name}.csv"
         self.best = {"val_f1": -1.0, "stage": 0, "epoch": 0}
+        self.ema: ModelEmaV3 | None = None      # --ema: สร้างตอนเริ่ม stage 2
         self.last_epoch = 0              # epoch สุดท้ายที่เทรนจริงใน stage 2 (ดูว่า early stop ตอนไหน)
 
     def _balance(self) -> torch.Tensor | None:
@@ -126,6 +131,8 @@ class Trainer:
         print(f"[{self.name}] stage 2: fine-tune ทั้งตัว, lr {hp['lr_backbone']} / {hp['lr_head']}, "
               f"{hp['epochs2']} epochs, patience {hp['patience']}")
         set_backbone_trainable(self.model, True)
+        if self.args.ema:
+            self.ema = ModelEmaV3(self.model, decay=EMA_DECAY, use_warmup=True)
         opt = AdamW(param_groups(self.model, hp["lr_backbone"], hp["lr_head"]), weight_decay=hp["weight_decay"])
         self._run_stage(2, opt, hp["epochs2"], CosineAnnealingLR(opt, T_max=hp["epochs2"]), hp["patience"])
 
@@ -143,7 +150,8 @@ class Trainer:
         for epoch in range(1, epochs + 1):
             t0 = time.perf_counter()
             train_loss, train_acc = train_one_epoch(
-                self.model, self.loaders["train"], self.criterion, optimizer, frozen_backbone=stage == 1)
+                self.model, self.loaders["train"], self.criterion, optimizer, frozen_backbone=stage == 1,
+                ema=self.ema)
             if scheduler:
                 scheduler.step()
             self.last_epoch = epoch
@@ -154,8 +162,13 @@ class Trainer:
                     print(f"  early stop: val F1 ไม่ดีขึ้น {patience} epoch ติด")
                     return
 
+    @property
+    def _eval_model(self) -> nn.Module:
+        """โมเดลที่ประเมิน + เซฟ: ถ้าเปิด --ema ใช้น้ำหนักเฉลี่ย (EMA) ไม่งั้นใช้น้ำหนักปัจจุบัน"""
+        return self.ema.module if self.ema is not None else self.model
+
     def _validate(self, stage: int, epoch: int, train_loss: float, train_acc: float, t0: float) -> bool:
-        r = evaluate(self.model, self.loaders["val"], self.criterion)
+        r = evaluate(self._eval_model, self.loaders["val"], self.criterion)
         improved = r.macro_f1 > self.best["val_f1"]     # เลือกจาก macro F1 ไม่ใช่ accuracy
         if improved:
             self.best = {"val_f1": r.macro_f1, "stage": stage, "epoch": epoch}
@@ -175,7 +188,7 @@ class Trainer:
 
     def _save_checkpoint(self, val_acc: float) -> None:
         torch.save({
-            "model": self.model.state_dict(),
+            "model": self._eval_model.state_dict(),
             "model_key": self.args.model,
             "timm_name": MODELS[self.args.model],
             "task": self.task.name,
@@ -232,6 +245,10 @@ def parse_args() -> argparse.Namespace:
     g.add_argument("--weight-decay", type=float, default=WEIGHT_DECAY)
     g.add_argument("--balance", default="none", choices=["none", "weight", "undersample"],
                    help="จัดการคลาสไม่สมดุล (ดู Trainer._balance)")
+    g.add_argument("--aug", default=TRAIN_AUG, choices=["base", "strong"],
+                   help="augmentation (datasets.build_transforms)")
+    g.add_argument("--ema", default=TRAIN_EMA, action=argparse.BooleanOptionalAction,
+                   help="เซฟ/ประเมินน้ำหนักเฉลี่ยแบบเลื่อนใน stage 2 (config.EMA_DECAY)")
     return p.parse_args()
 
 

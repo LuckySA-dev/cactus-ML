@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 32" width="250" height="32">
+  <!-- ชื่อกลุ่ม (config.TEAM_NAME) + ไอคอนกระบองเพชร · st.logo สูงสุด ~32px จึงทำบรรทัดเดียว -->
+  <rect x="0" y="2" width="28" height="28" rx="7" fill="#2f6b3a"/>
+  <path d="M14 7c-2.3 0-3 1.5-3 3v15h6V10c0-1.5-.7-3-3-3zM8 14c-1.5 0-2.3.8-2.3 2.3v2.4c0 1.5.8 2.3 2.3 2.3h3v-3H8.8v-1.6C8.8 15 8 14 8 14zM20 12c1.5 0 2.3.8 2.3 2.3v3c0 1.5-.8 2.3-2.3 2.3h-3v-3h2.2v-2.4c0-1.4.8-2.2.8-2.2z" fill="#f4f6ef"/>
+  <text x="36" y="22" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="17" fill="#1d2a1f"><tspan font-weight="700">Cactus Classifier</tspan><tspan fill="#5b6a5c" font-size="13"> by KMUTNB</tspan></text>
+</svg>

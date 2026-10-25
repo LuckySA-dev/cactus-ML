@@ -38,6 +38,7 @@ from src.config import (
     GRADCAM_LAYERS,
     RUNS_CSV,
     SUBCLASS_TH,
+    SUBCLASSES,
 )
 from src.datasets import build_transforms, load_image
 from src.models import load_checkpoint
@@ -69,11 +70,12 @@ class Prediction:
 
 
 def best_run(model: str = DEPLOY_MODEL, task: str = "flat") -> str:
-    """seed ที่ val macro F1 สูงสุดของโมเดลนี้ (เลือกด้วย val — ไม่ดู test) จาก reports/runs.csv"""
+    """seed ที่ val macro F1 สูงสุดของโมเดลนี้ (เลือกด้วย val — ไม่ดู test) จาก reports/runs.csv
+    run ชื่อเดียวกันที่เทรนซ้ำหลายครั้ง ใช้แถวล่าสุด (ตรงกับ checkpoint ที่อยู่บนดิสก์ตอนนี้)"""
     with RUNS_CSV.open(encoding="utf-8-sig", newline="") as f:
-        runs = [r for r in csv.DictReader(f)
-                if r["model"] == model and r.get("task") == task and r["phase"] == "final"
-                and (CHECKPOINT_DIR / f"{r['run']}_best.pt").exists()]
+        latest = {r["run"]: r for r in csv.DictReader(f)
+                  if r["model"] == model and r.get("task") == task and r["phase"] == "final"}
+    runs = [r for r in latest.values() if (CHECKPOINT_DIR / f"{r['run']}_best.pt").exists()]
     if not runs:
         raise SystemExit(f"ไม่มี checkpoint งาน {task} ของ {model} — เทรนก่อน: "
                          f"python -m src.train --model {model} --task {task}")
@@ -86,21 +88,33 @@ def missing_care_fields(entry: dict) -> list[str]:
     return missing + [key for key in ("common_mistake", "reference") if not entry.get(key, "").strip()]
 
 
-def load_care_rules(path: Path = CARE_RULES_JSON) -> tuple[dict[str, dict], list[str]]:
-    """(สกุลที่เนื้อหาครบ, ข้อความเตือนสกุลที่ยังไม่ครบ)"""
+CareRules = dict[tuple[str, str | None], dict]      # (สกุล, คลาสย่อย | None = ระดับสกุล) → คำแนะนำที่ครบแล้ว
+
+
+def load_care_rules(path: Path = CARE_RULES_JSON) -> tuple[CareRules, list[str]]:
+    """
+    (คำแนะนำที่เนื้อหาครบ, ข้อความเตือนส่วนที่ยังไม่ครบ)
+    คำแนะนำระดับชนิด (subclasses) ทับเฉพาะช่องที่เขียนไว้ ช่องที่เหลือใช้ของสกุล · key ที่ขึ้นต้นด้วย _ = หมายเหตุ ไม่ใช่สกุล
+    """
     if not path.exists():
         return {}, [f"ไม่พบ {path.name} — ทำนายได้ แต่ไม่มีคำแนะนำการดูแล"]
-    rules = json.loads(path.read_text(encoding="utf-8"))
+    rules = {k: v for k, v in json.loads(path.read_text(encoding="utf-8")).items() if not k.startswith("_")}
     unknown = sorted(set(rules) - set(CLASSES))
     if unknown:
         raise SystemExit(f"{path.name} มีสกุลที่ไม่อยู่ใน config.CLASSES: {unknown}")
     complete, warnings = {}, []
     for genus in CLASSES:
-        missing = missing_care_fields(rules.get(genus, {}))
-        if missing:
-            warnings.append(f"{genus}: ยังไม่ครบ ({', '.join(missing)})")
-        else:
-            complete[genus] = rules[genus]
+        base = {k: v for k, v in rules.get(genus, {}).items() if k != "subclasses"}
+        subs = rules.get(genus, {}).get("subclasses", {})
+        unknown = sorted(set(subs) - set(SUBCLASSES.get(genus, [])))
+        if unknown:
+            raise SystemExit(f"{path.name}: {genus} มีคลาสย่อยที่ไม่อยู่ใน config.SUBCLASSES: {unknown}")
+        for sub, entry in [(None, base), *((s, base | e) for s, e in subs.items())]:
+            missing = missing_care_fields(entry)
+            if missing:
+                warnings.append(f"{genus}{f'/{sub}' if sub else ''}: ยังไม่ครบ ({', '.join(missing)})")
+            else:
+                complete[(genus, sub)] = entry
     return complete, warnings
 
 
@@ -139,7 +153,10 @@ class Predictor:
         best_class = max(in_genus, key=lambda i: probs[i])
         if confidence < CONFIDENCE_THRESHOLD:
             return Prediction(None, confidence, top, subs, None, best_class)
-        return Prediction(genus, confidence, top, subs, self.care.get(genus), best_class)
+        # มั่นใจชนิด → คำแนะนำเฉพาะชนิด · ไม่มั่นใจ / ชนิด other / ไม่มีเนื้อหาของชนิดนั้น → คำแนะนำระดับสกุล
+        sub = subs[0][0] if subs and subs[0][1] >= CONFIDENCE_THRESHOLD else None
+        care = self.care.get((genus, sub)) or self.care.get((genus, None))
+        return Prediction(genus, confidence, top, subs, care, best_class)
 
     def explain(self, image: Image.Image, class_index: int) -> tuple[np.ndarray, np.ndarray]:
         """Grad-CAM → (ภาพที่โมเดลเห็น [224,224,3] 0–1, ความสำคัญ [224,224] 0–1) ต่อคลาสที่ทาย"""

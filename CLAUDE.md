@@ -120,6 +120,10 @@ plant_id, phash, width, height, quality_grade, captive, n_agree, split, qc_statu
 - Stage 2: unfreeze, lr **3e-4 (backbone) / 3e-3 (head)**, 40 epochs, early stopping patience 8
   (จูนแล้ว — plan เดิม 1e-5/1e-4 ต่ำเกิน val F1 0.890 → 0.930 · ดู `docs/tuning.md` · จูนต้องดู val ห้ามดู test)
 
+- **สูตรหลักตั้งแต่ 2026-10-22: EMA + augment แรง** (`config.TRAIN_AUG/TRAIN_EMA`, ปิดด้วย `--aug base --no-ema`)
+  val F1 +2.1 จุด (docs/tuning.md รอบ 7) · ผลสูตรเก่าอยู่ `checkpoints/v1_base/`, `reports/v1_base/`
+  TTA และ ensemble ลองแล้วไม่ช่วย (ผลลบ)
+
 **เลือก best checkpoint จาก macro F1 ไม่ใช่ accuracy**
 Loss ใช้ `CrossEntropyLoss(label_smoothing=0.1)` (ทำให้ค่า confidence น่าเชื่อถือขึ้น
 ซึ่งจำเป็น เพราะเราใช้ threshold 0.60 ตัดสินว่า "ไม่แน่ใจ")
@@ -168,8 +172,13 @@ Loss ใช้ `CrossEntropyLoss(label_smoothing=0.1)` (ทำให้ค่า
   ภาพดอกล้วนยังหลุด QC อยู่ใน test) · ภาพ "parodia" แถวเทียบ ทั้ง 3 โมเดลทาย echinopsis → น่าตรวจ label
 - `src/predict.py` — `Predictor(best_run(model)).predict(load_image(path))` → สกุล + ชนิด (ชั้น 2) / "ไม่แน่ใจ" (< 0.60)
   + care rules + `explain()` (Grad-CAM) · ใช้ได้ทั้ง checkpoint flat/genus · `best_run` = seed ที่ val F1 ดีสุด (runs.csv)
-- `app/app.py` — Streamlit: อัปโหลด (รับ HEIC) / ถ่ายภาพ (เปิดกล้องเมื่อกดเท่านั้น) · เลือกโมเดลทีละตัว หรือเทียบ
-  `config.APP_MODELS` ทั้งหมด · Grad-CAM · ทดสอบในเบราว์เซอร์แล้ว · รัน `streamlit run app/app.py`
+- `app/` — Streamlit 2 หน้า (2026-10-24) · `streamlit run app/app.py` จาก project root (ธีม `.streamlit/config.toml`)
+  - `predict_page.py` ผู้ใช้ทั่วไป: อัปโหลด (HEIC) / กล้อง (เปิดเมื่อกด) → การ์ด "ป้ายปักกระถาง" + ความมั่นใจ
+    (ไม่มีรูปตัวอย่าง — ผู้ใช้สั่งเอาออก หน้าว่างแสดงแค่วิธีใช้ + เคล็ดลับถ่ายรูป)
+    เป็นคำ + วิธีดูแล 3 การ์ด + อ้างอิง · Grad-CAM/เทียบ 3 โมเดลอยู่ใน expander/sidebar
+  - `eval_page.py` นำเสนอ: KPI vs เป้า 91% / gap 9.86% · เทียบ 6 โมเดล (Altair, สีตาม MODEL_COLOR) · เจาะรายโมเดล
+    (confusion, รายคลาส, slider threshold, ภาพที่ผิด) · สูตรเดิม→ใหม่ · อ่าน reports/ อย่างเดียว ไม่ทายใหม่
+  - light theme เท่านั้น (palette ตรวจ CVD กับพื้นสว่าง) · `config.TARGET_ACC`, `REFERENCE_GAP`
 - `evaluate.py` (เขียนใหม่ 2026-10-07) — ทุก checkpoint ทุกงาน: ชั้นสกุล (อนุมานจาก leaf) + leaf acc/F1 + realworld + gap
   predictions มีคอลัมน์ `leaf_true`, `pred_class` · `compare.py` อ่านจาก results.csv (ไม่ทายซ้ำ) + McNemar + แนะนำ APP_MODELS
 - run หลัก = `tasks.run_id(model, seed)` (งาน `tasks.MAIN_TASK = "flat"`) — visualize / gradcam / compare ใช้ร่วมกัน
@@ -186,10 +195,18 @@ Loss ใช้ `CrossEntropyLoss(label_smoothing=0.1)` (ทำให้ค่า
 - นำเข้า handon 260 + web 504 (ซ้ำ/เล็ก/เสียถูกข้าม) · realworld_test = 116 ภาพ (ยังไม่มี echinopsis — ต้นน้อยเกิน)
 - ต้น (plant) ของภาพถ่ายเองจัดกลุ่มจาก contact sheet แบบกว้างไว้ก่อน (กัน leakage) · checkpoint ก่อนนำเข้าอยู่ `checkpoints/pre_field/`
 
+**API หลังบ้าน (2026-10-22)** — `api/main.py` (FastAPI): `/api/health`, `/api/models`, `/api/predict`, `/api/compare`
+ใช้ `predict.Predictor` ตัวเดียวกับแอป · จำกัดไฟล์ 10 MB / ภาพเท่านั้น / ชื่อโมเดลต้องอยู่ใน APP_MODELS · CORS ผ่าน env
+`CORS_ORIGINS` · ทดสอบ `pytest -q` (tests/test_api.py ภาพปลอม, 11 ข้อ) · รัน `uvicorn api.main:app --port 8000`
+- แก้บั๊ก evaluate: macro F1 นับเฉพาะคลาสที่มีภาพใน split (realworld ไม่มี echinopsis เคยทำ F1 ตกเหลือ ~0.74 จริง ~0.87)
+- `best_run` ใช้แถวล่าสุดของ run ชื่อซ้ำใน runs.csv · graphify knowledge graph อยู่ `graphify-out/` (ไม่ commit)
+
 **ยังไม่มี**
 - `src/export.py`
-- **เนื้อหา** `care_rules/care_rules.json` — มีโครงแล้ว (name_th เท่านั้น) ทีมต้องเขียน + ใส่ reference ทุกสกุล
-  สกุลที่ยังไม่ครบ predict/app จะไม่แสดงคำแนะนำ (กันแสดงครึ่ง ๆ / ไม่มีอ้างอิง)
+- `care_rules/care_rules.json` **ร่างแล้ว 2026-10-08 (Claude, จาก LLIFLE + คู่มือ moon cactus) — รอทีมตรวจ**
+  7 สกุล + 14 ชนิด (`subclasses`, ไม่มี `other` → ใช้ของสกุล) · ช่องที่ชนิดไม่เขียนใช้ของสกุล · `_meta` = หมายเหตุ
+  `predict.load_care_rules` → key `(สกุล, ชนิด|None)` · มั่นใจชนิด ≥ 0.60 ใช้ของชนิด ไม่งั้นใช้ของสกุล
+  แปลงฤดูจากแหล่งอ้างอิงเขตหนาว: ช่วงโต = ร้อน/ฝน, ช่วงพัก = หนาว (พ.ย.–ก.พ.)
 
 **จูนเสร็จแล้ว (ก่อน QC, 2026-09-19)** — `docs/tuning.md`, ตัวเลขดิบ `reports/runs.csv`
 - val macro F1 (seed 42, lr ใหม่): effnetv2b0 0.928 · mobilenetv3 0.909 · resnet50 0.907
@@ -233,6 +250,18 @@ checkpoint ก่อน QC รอบ 3 อยู่ `checkpoints/pre_qc3/` · Da
 EffNetV2-B0 ดีสุด: สกุล 0.939 · ชนิด 0.883 · ภาพจริง 0.888 · gap 5.1% · ทุกโมเดลผ่าน 91% · gap 5–9% (อ้างอิง 9.86%)
 ภาพจริงชั้นชนิด 0.73 (ยาก) · `APP_MODELS` = effnetv2b0 / effnetb3 / resnet50 · Grad-CAM effnetb3 ใช้ `conv_head` (bn2 มี artifact มุมภาพ)
 Grad-CAM: ภาพยิมโนที่มีดอกใหญ่ B3/ResNet50 ดูดอกแล้วทายผิดเป็น echinopsis — ดอกยังเป็น cue แรง
+
+**ผลสูตร EMA + augment แรง (2026-10-22, 6 × 3 seeds, test 794 / realworld 116)** — ผลปัจจุบัน
+EffNetV2-B0 ชนิด 0.900 · ResNet50 0.898 · EffNet-B3 0.895 (สกุล 0.953 ดีสุด, ภาพจริง 0.888) · ทุกโมเดล test ดีขึ้น
+ภาพจริงผสม (บางตัวลด) · gap 6.5–9.8% · APP_MODELS เดิม แต่ seed ดีสุดเปลี่ยน (v2b0 s43, b3 s42, r50 s42 — อยู่ใน LFS)
+
+**QC ครบทุกภาพ + เทรนใหม่ (2026-10-24/25)** — ผลปัจจุบัน
+- Claude ดูด้วยตาครบทุกภาพที่ยังไม่เคยตรวจ (3,845 ภาพ, `reports/qc/full_review.csv`) + รอบ 4 flag_suspects + สุ่มตรวจ
+  → label ผิดสกุลแค่ 5 · ตัดทิ้ง 297 (ดอกบังต้น/หลายสกุล/เบลอ) · ชนิดน่าสงสัย ~12 ภาพ จดใน notes ไม่ได้แก้
+- split ใหม่ 3,428 / 750 / 750 / realworld 107 (pending = 0) · ของเก่า `checkpoints/pre_qc5/`, `reports/pre_qc5/`
+- ผล 6 × 3 seeds: DenseNet-121 ชนิด 0.910 · EffNet-B3 สกุล 0.959 / ภาพจริง 0.866 · EffNetV2-B0 0.898 · gap 8.7–11.3%
+- `APP_MODELS` = densenet121 (s42) / effnetb3 (s44) / effnetv2b0 (s42) — whitelist LFS ใน .gitignore แล้ว
+- เทรนตอนเครื่องปิด session บาง run ตายเงียบ (เหลือ checkpoint ครึ่งทาง) → เช็ค runs.csv ว่ามีแถวใหม่ครบทุก run ก่อน evaluate
 
 **ขอบเขต: ทาย 2 ชั้น สกุล → สปีชีส์** (เน้นนิยมในไทย แจ้งอาจารย์แล้ว)
 - `metadata.csv` มีคอลัมน์ `species` แล้ว (ว่าง = ระบุได้แค่สกุล), เติมย้อนหลังด้วย `--backfill-species`

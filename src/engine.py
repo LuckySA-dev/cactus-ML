@@ -55,8 +55,10 @@ def train_one_epoch(
     criterion: nn.Module,
     optimizer: torch.optim.Optimizer,
     frozen_backbone: bool,
+    ema: nn.Module | None = None,
 ) -> tuple[float, float]:
-    """คืน (train_loss, train_acc) — frozen_backbone=True ใน stage 1 เพื่อไม่ให้ BN อัปเดต running stats"""
+    """คืน (train_loss, train_acc) — frozen_backbone=True ใน stage 1 เพื่อไม่ให้ BN อัปเดต running stats
+    ema = timm ModelEmaV3 (ถ้ามี) อัปเดตค่าเฉลี่ยน้ำหนักหลังทุก step"""
     model.train()
     if frozen_backbone:
         freeze_bn(model)
@@ -69,6 +71,8 @@ def train_one_epoch(
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         optimizer.step()
+        if ema is not None:
+            ema.update(model)
         loss_sum += loss.item() * len(y)
         correct += (logits.argmax(1) == y).sum().item()
         n += len(y)
