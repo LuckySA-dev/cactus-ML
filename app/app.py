@@ -17,7 +17,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # ให้ทุ
 
 st.set_page_config(page_title="Cactus Classifier", page_icon="🌵", layout="wide")
 st.logo(str(Path(__file__).parent / "logo.svg"), size="large")      # ชื่อกลุ่มมุมซ้ายบน (config.TEAM_NAME)
+# เมนูหน้าอยู่แถบบน (ไม่ใช่ sidebar) — บนมือถือเห็นทันที ไม่ต้องกดเปิดเมนูซ่อน
 st.navigation([
     st.Page("predict_page.py", title="ทายชื่อ + วิธีดูแล", icon="🌵", default=True),
     st.Page("eval_page.py", title="ประเมินผลโมเดล", icon="📊"),
-]).run()
+], position="top").run()

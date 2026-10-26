@@ -51,7 +51,9 @@ def test_predict_schema(model: str):
     assert probs == sorted(probs, reverse=True) and sum(probs) <= 1 + 1e-6
     if body["subclasses"]:                      # prob ภายในสกุลรวมกันได้ 1
         assert math.isclose(sum(s["prob"] for s in body["subclasses"]), 1, abs_tol=1e-4)
-    if not body["confident"]:                   # ไม่มั่นใจ → มีข้อความ ไม่มีคำแนะนำ
+    assert body["status"] in ("confident", "unsure", "not_found")
+    assert body["confident"] == (body["status"] == "confident")
+    if not body["confident"]:                   # ไม่มั่นใจ / ไม่พบ → มีข้อความ ไม่มีคำแนะนำ
         assert body["message"] and body["care"] is None
 
 

@@ -173,7 +173,11 @@ Loss ใช้ `CrossEntropyLoss(label_smoothing=0.1)` (ทำให้ค่า
 - `src/predict.py` — `Predictor(best_run(model)).predict(load_image(path))` → สกุล + ชนิด (ชั้น 2) / "ไม่แน่ใจ" (< 0.60)
   + care rules + `explain()` (Grad-CAM) · ใช้ได้ทั้ง checkpoint flat/genus · `best_run` = seed ที่ val F1 ดีสุด (runs.csv)
 - `app/` — Streamlit 2 หน้า (2026-10-24) · `streamlit run app/app.py` จาก project root (ธีม `.streamlit/config.toml`)
-  - `predict_page.py` ผู้ใช้ทั่วไป: อัปโหลด (HEIC) / กล้อง (เปิดเมื่อกด) → การ์ด "ป้ายปักกระถาง" + ความมั่นใจ
+  - `predict_page.py` ผู้ใช้ทั่วไป (ออกแบบสำหรับมือถือ 2026-10-27): **ไม่มี sidebar** · เมนูหน้าอยู่แถบบน
+    · ขั้น 1 ใส่รูป (โหมด อัปโหลด/ถ่ายด้วยมือถือ = ค่าเริ่มต้น หรือ กล้องในหน้าเว็บ ซึ่งต้องเปิดผ่าน https)
+    · ขั้น 2 เลือกโมเดล (selectbox บนหน้าหลัก) → การ์ด "ป้ายปักกระถาง" + ความมั่นใจ · ประวัติรูปที่ทายในรอบนี้
+    · 3 สถานะ `Prediction.status`: confident / unsure / **not_found** (< `config.NOT_FOUND_THRESHOLD` 0.40
+      ไม่แสดงสกุลที่เดา · วัดจากภาพไม่ใช่กระบองเพชร 220 ภาพ) — API ส่ง `status` ด้วย
     (ไม่มีรูปตัวอย่าง — ผู้ใช้สั่งเอาออก หน้าว่างแสดงแค่วิธีใช้ + เคล็ดลับถ่ายรูป)
     เป็นคำ + วิธีดูแล 3 การ์ด + อ้างอิง · Grad-CAM/เทียบ 3 โมเดลอยู่ใน expander/sidebar
   - `eval_page.py` นำเสนอ: KPI vs เป้า 91% / gap 9.86% · เทียบ 6 โมเดล (Altair, สีตาม MODEL_COLOR) · เจาะรายโมเดล

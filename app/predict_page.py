@@ -1,7 +1,9 @@
 """
 predict_page.py — หน้า "ทายชื่อ + วิธีดูแล" (ผู้ใช้ทั่วไป): ถ่าย/อัปโหลดภาพ → ป้ายชื่อต้นไม้ + วิธีดูแล
 
-- โมเดลค่าเริ่มต้น = config.APP_MODELS[0] (seed ที่ val ดีสุด) · เปลี่ยน/เทียบ 3 โมเดลได้ใน sidebar
+- ออกแบบให้ใช้บนมือถือ: ทุกอย่างอยู่หน้าหลัก ไม่มี sidebar · ขั้น 1 ใส่รูป → ขั้น 2 เลือกโมเดล (ใช้ค่าเริ่มต้นได้เลย)
+- โมเดลค่าเริ่มต้น = config.APP_MODELS[0] (seed ที่ val ดีสุด) · เทียบ 3 โมเดลได้
+- 3 สถานะ (predict.Prediction.status): มั่นใจ / ไม่แน่ใจ / ไม่พบกระบองเพชร (< NOT_FOUND_THRESHOLD ไม่แสดงสกุลที่เดา)
 - รองรับภาพจาก iPhone (.HEIC) และหมุนตาม EXIF เหมือนตอนเทรน
 """
 from __future__ import annotations
@@ -45,6 +47,10 @@ CSS = """
 .tag .th {font-family:'Mali', cursive; font-size:2.3rem; font-weight:700; line-height:1.2; margin:2px 0;
           color:#2f6b3a;}
 .tag.unsure .th {color:#7a5414;}
+.tag.none::before {border-color:#8a948b;}
+.tag.none .th {color:#5b6a5c; font-size:1.6rem;}
+.step-h {font-weight:700; font-size:1.05rem; margin:6px 0 2px;}
+.hist {font-size:.8rem; line-height:1.3; color:#3d4a3e; text-align:center;}
 .tag .la {font-style:italic; color:#5b6a5c;}
 .tag .sp {display:inline-block; margin-top:8px; padding:3px 12px; border-radius:999px; background:#e8e4d6;
           color:#1d2a1f; font-weight:600;}
@@ -121,7 +127,16 @@ def plant_tag(pred: Prediction) -> None:
 
 def unsure_help() -> None:
     st.warning(f"ความมั่นใจต่ำกว่า {CONFIDENCE_THRESHOLD:.0%} จึงยังไม่แนะนำวิธีดูแล "
-               "(แนะนำผิดสกุลอาจทำให้ต้นเสียหาย) — ลองถ่ายใหม่:\n\n" + "\n".join(f"- {t}" for t in RETAKE_TIPS))
+               "(แนะนำผิดสกุลอาจทำให้ต้นเสียหาย) หรืออาจเป็นกระบองเพชรสกุลที่แอปยังไม่รู้จัก ลองถ่ายใหม่:\n\n"
+               + "\n".join(f"- {t}" for t in RETAKE_TIPS))
+
+
+def not_found_card() -> None:
+    """ความมั่นใจต่ำมาก = น่าจะไม่ใช่กระบองเพชร 7 สกุล → ไม่แสดงสกุลที่เดา (ตัวเลข 20% ของแมมทำให้คนเข้าใจผิด)"""
+    st.markdown('<div class="tag none"><div class="k">ผลที่ได้</div><div class="th">ไม่พบกระบองเพชร</div>'
+                '<div class="la">ในรูปนี้ หรืออาจเป็นสกุลที่แอปยังไม่รู้จัก</div></div>', unsafe_allow_html=True)
+    st.info("ลองถ่ายใหม่ให้เห็นต้นกระบองเพชรชัด ๆ:\n\n" + "\n".join(f"- {t}" for t in RETAKE_TIPS)
+            + "\n\nแอปรู้จัก 7 สกุล: " + " ".join(CLASS_TH[g] for g in CLASSES))
 
 
 def ref_link(url: str) -> str:
@@ -181,9 +196,10 @@ def compare_models(image: Image.Image) -> None:
     for key in APP_MODELS:
         p = get_predictor(key).predict(image)
         genus, prob = p.topk[0]
-        rows.append({"โมเดล": model_label(key), "สกุล": CLASS_TH[genus],
+        found = p.status != "not_found"
+        rows.append({"โมเดล": model_label(key), "สกุล": CLASS_TH[genus] if found else "ไม่พบกระบองเพชร",
                      "ชนิด": SUBCLASS_TH[p.subclass] if p.subclass else "–", "ความมั่นใจ": prob,
-                     "ผล": confidence_word(prob)})
+                     "ผล": confidence_word(prob) if found else "ไม่พบ"})
     st.dataframe(rows, hide_index=True, width="stretch", column_config={
         "ความมั่นใจ": st.column_config.ProgressColumn(min_value=0.0, max_value=1.0, format="percent")})
 
@@ -203,40 +219,79 @@ def how_to() -> None:
     st.caption("รู้จัก 7 สกุล: " + " ".join(CLASS_TH[g] for g in CLASSES))
 
 
+INPUT_MODES = ["📁 อัปโหลด / ถ่ายด้วยมือถือ", "📷 กล้องในหน้าเว็บ"]
+
+
 def pick_image() -> tuple[Image.Image | None, str]:
-    upload, camera = st.tabs(["📁 อัปโหลดรูป", "📷 ถ่ายรูป"])
-    with upload:
-        file = st.file_uploader("รูปกระบองเพชร (ให้เห็นทั้งต้น)", type=UPLOAD_TYPES, label_visibility="collapsed",
-                                key=f"up_{st.session_state.upload_key}")
-    with camera:          # เปิดกล้องเมื่อผู้ใช้กดเท่านั้น — ไม่งั้นเบราว์เซอร์ขอสิทธิ์กล้องทันทีที่เปิดหน้า
-        shot = st.camera_input("ถ่ายรูป", label_visibility="collapsed") if st.toggle("เปิดกล้อง") else None
-    chosen = shot or file
+    """มือถือ: ปุ่มอัปโหลดเลือก "ถ่ายรูป" ได้เลย (กล้องหลัง ความละเอียดเต็ม) จึงเป็นค่าเริ่มต้น
+    กล้องในหน้าเว็บ (camera_input) สร้างเมื่อเลือกโหมดนี้เท่านั้น — ไม่งั้นเบราว์เซอร์ขอสิทธิ์กล้องทันทีที่เปิดหน้า"""
+    st.markdown('<div class="step-h">1. ใส่รูปกระบองเพชร</div>', unsafe_allow_html=True)
+    mode = st.segmented_control("วิธีใส่รูป", INPUT_MODES, default=INPUT_MODES[0], label_visibility="collapsed",
+                                width="stretch")
+    if mode == INPUT_MODES[1]:
+        chosen = st.camera_input("ถ่ายรูป", label_visibility="collapsed", key=f"cam_{st.session_state.upload_key}")
+        st.caption("ถ้ากล้องไม่ขึ้น ให้กดอนุญาตการใช้กล้องในเบราว์เซอร์ (ใช้ได้เฉพาะลิงก์ https) "
+                   "หรือใช้โหมดอัปโหลดแทน")
+    else:
+        chosen = st.file_uploader("รูปกระบองเพชร (ให้เห็นทั้งต้น)", type=UPLOAD_TYPES, label_visibility="collapsed",
+                                  key=f"up_{st.session_state.upload_key}")
+        st.caption("บนมือถือ กดปุ่มนี้แล้วเลือก \"ถ่ายรูป\" เพื่อใช้กล้องหลัง (ภาพชัดที่สุด) หรือเลือกจากคลังภาพ")
     try:
         if chosen:
             return load_image(chosen), chosen.name
     except OSError:
-        st.error("เปิดไฟล์นี้ไม่ได้ — ใช้ JPG / PNG / WEBP / HEIC")
+        st.error("เปิดไฟล์นี้ไม่ได้ ใช้ไฟล์ JPG / PNG / WEBP / HEIC")
     return None, ""
 
 
+def pick_model() -> tuple[str, bool]:
+    """เลือกโมเดลบนหน้าหลัก (แทน sidebar ที่มือถือต้องกดเปิด) · ค่าเริ่มต้น = แม่นที่สุด ไม่ต้องแตะก็ได้"""
+    st.markdown('<div class="step-h">2. โมเดลที่ใช้ทาย</div>', unsafe_allow_html=True)
+    model = st.selectbox("โมเดลที่ใช้ทาย", APP_MODELS, format_func=model_label, label_visibility="collapsed",
+                         help="เรียงจากแม่นที่สุด ตัวเลขคือความแม่นยำในการทายชนิดบนชุดทดสอบ (เฉลี่ย 3 seeds) "
+                              "ทั้ง 3 ตัวทายสกุลผ่านเป้า 91%")
+    compare_all = st.toggle("เทียบผลทั้ง 3 โมเดล")
+    return model, compare_all
+
+
+def remember(name: str, model: str, image: Image.Image, pred: Prediction) -> None:
+    """เก็บผลไว้ในรอบใช้งานนี้ (หน่วยความจำของเบราว์เซอร์นี้เท่านั้น ไม่บันทึกลงเซิร์ฟเวอร์) · ล่าสุดอยู่หน้า"""
+    key = (name, model, image.size)
+    history = [h for h in st.session_state.history if h["key"] != key]
+    thumb = image.copy()
+    thumb.thumbnail((240, 240))
+    genus, prob = pred.topk[0]
+    label = {"confident": CLASS_TH[genus], "unsure": f"{CLASS_TH[genus]}?", "not_found": "ไม่พบ"}[pred.status]
+    st.session_state.history = [{"key": key, "thumb": thumb, "label": label, "prob": prob}, *history][:HISTORY_MAX]
+
+
+def history_strip() -> None:
+    items = st.session_state.history[1:]                     # ตัวแรก = รูปที่กำลังดูอยู่
+    if not items:
+        return
+    st.markdown('<div class="step-h">รูปที่ทายไปแล้ว</div>', unsafe_allow_html=True)
+    row = st.container(horizontal=True, gap="small")
+    for h in items:
+        with row.container(width=96):
+            st.image(h["thumb"], width="stretch")
+            st.markdown(f'<div class="hist">{html.escape(h["label"])}<br>{h["prob"]:.0%}</div>',
+                        unsafe_allow_html=True)
+
+
+HISTORY_MAX = 7
+
 st.markdown(CSS, unsafe_allow_html=True)
 st.session_state.setdefault("upload_key", 0)
-with st.sidebar:
-    st.subheader("ตั้งค่าโมเดล")
-    model = st.radio("โมเดลที่ใช้ทาย", APP_MODELS, format_func=model_label,
-                     help="เรียงจากแม่นที่สุด ตัวเลขคือความแม่นยำในการทายชนิดบนชุดทดสอบ (เฉลี่ย 3 seeds) "
-                          "ทั้ง 3 ตัวทายสกุลผ่านเป้า 91%")
-    st.caption("อันดับ 1 แม่นที่สุด ตัวเลขในวงเล็บคือความแม่นยำการทายชนิด")
-    compare_all = st.toggle("เทียบผลทั้ง 3 โมเดล")
-    st.caption(f"ความมั่นใจต่ำกว่า {CONFIDENCE_THRESHOLD:.0%} → ตอบว่าไม่แน่ใจ แทนการเดา")
+st.session_state.setdefault("history", [])
 
 st.title("กระบองเพชรต้นนี้ชื่ออะไร")
 st.caption("ถ่ายรูปหรืออัปโหลดรูปต้นกระบองเพชร แล้วแอปจะบอกชื่อและวิธีดูแล รู้จัก 7 สกุลที่นิยมเลี้ยงในไทย")
 left, right = st.columns([5, 7], gap="large")
 with left:
     image, name = pick_image()
+    model, compare_all = pick_model()
     if image is not None:
-        st.image(image, caption=name, width="stretch")
+        st.image(image, caption=name, width=360)          # ย่อพอดูได้ บนมือถือผลจะได้ขึ้นเร็ว ไม่ต้องเลื่อนไกล
         st.button("↺ เลือกรูปอื่น", on_click=reset, width="stretch")
 with right:
     if image is None:
@@ -249,15 +304,21 @@ with right:
             st.stop()
         with st.spinner("กำลังดู…"):
             result = predictor.predict(image)
-        plant_tag(result)
+        remember(name, model, image, result)
+        if result.status == "not_found":
+            not_found_card()
+        else:
+            plant_tag(result)
         if compare_all:
             compare_models(image)
         # วิธีดูแลอยู่ใต้ผลทันที (เห็นพร้อมกันโดยไม่ต้องเลื่อนผ่านรูป) · คำอธิบายโมเดลไว้ท้ายสุด
-        if result.confident:
+        if result.status == "confident":
             care_section(result)
-        else:
+        elif result.status == "unsure":
             unsure_help()
-        why_section(predictor, image, result)
+        if result.status != "not_found":                  # ไม่พบ = ไม่โชว์สกุลที่เดา (แม้แต่ใน expander)
+            why_section(predictor, image, result)
+history_strip()
 st.divider()
 st.caption("ผลจากโมเดลอาจผิดพลาดได้ ใช้ประกอบการตัดสินใจ ไม่ใช่แทนผู้เชี่ยวชาญ "
            "รูปที่อัปโหลดใช้ทายผลเท่านั้นและไม่ถูกเก็บไว้ — โปรเจควิชา Machine Learning, KMUTNB")

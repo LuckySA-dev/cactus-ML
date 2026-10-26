@@ -44,7 +44,7 @@ from src.config import (  # noqa: E402
 )
 from src.datasets import load_image  # noqa: E402
 from src.gradcam import spotlight  # noqa: E402
-from src.predict import UNSURE_MESSAGE, Prediction, Predictor, best_run  # noqa: E402
+from src.predict import NOT_FOUND_MESSAGE, UNSURE_MESSAGE, Prediction, Predictor, best_run  # noqa: E402
 
 pillow_heif.register_heif_opener()          # ภาพจาก iPhone (.HEIC)
 ModelKey = Literal[tuple(APP_MODELS)]       # ชื่อโมเดลอื่น → 422 อัตโนมัติ
@@ -81,6 +81,7 @@ class PredictionOut(BaseModel):
     model_name: str
     run: str
     confident: bool                         # False = ความมั่นใจสกุล < threshold → ให้ผู้ใช้ถ่ายใหม่
+    status: Literal["confident", "unsure", "not_found"]   # not_found = ไม่น่าใช่กระบองเพชร 7 สกุล (ไม่ควรแสดงสกุล)
     message: str | None                     # ข้อความสำหรับผู้ใช้เมื่อไม่มั่นใจ
     genus: ClassProb                        # สกุลอันดับ 1 (แม้ไม่มั่นใจก็ส่งมา ให้หน้าเว็บแสดงเป็น "ใกล้เคียงสุด")
     top_genera: list[ClassProb]
@@ -145,8 +146,9 @@ def run_model(model: str, image: Image.Image, gradcam: bool) -> PredictionOut:
     sub = pred.subclass
     return PredictionOut(
         model=model, model_name=MODEL_NAMES[model], run=predictor.run,
-        confident=pred.confident,
-        message=None if pred.confident else f"{UNSURE_MESSAGE} (ความมั่นใจ {prob:.0%} < {CONFIDENCE_THRESHOLD:.0%})",
+        confident=pred.confident, status=pred.status,
+        message={"confident": None, "not_found": NOT_FOUND_MESSAGE}.get(
+            pred.status, f"{UNSURE_MESSAGE} (ความมั่นใจ {prob:.0%} < {CONFIDENCE_THRESHOLD:.0%})"),
         genus=ClassProb(key=genus, name_th=CLASS_TH[genus], prob=prob),
         top_genera=[ClassProb(key=g, name_th=CLASS_TH[g], prob=p) for g, p in pred.topk],
         subclass=next((ClassProb(key=s, name_th=SUBCLASS_TH[s], prob=p) for s, p in pred.subclasses if s == sub),

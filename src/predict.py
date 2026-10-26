@@ -36,6 +36,7 @@ from src.config import (
     CONFIDENCE_THRESHOLD,
     DEPLOY_MODEL,
     GRADCAM_LAYERS,
+    NOT_FOUND_THRESHOLD,
     RUNS_CSV,
     SUBCLASS_TH,
     SUBCLASSES,
@@ -46,6 +47,7 @@ from src.tasks import LEAF_SEP, genus_of
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 UNSURE_MESSAGE = "ไม่แน่ใจ กรุณาถ่ายใหม่ (ให้เห็นทั้งต้น ชัด แสงพอ)"
+NOT_FOUND_MESSAGE = "ไม่พบกระบองเพชรที่แอปรู้จักในรูปนี้"
 
 
 @dataclass
@@ -60,6 +62,13 @@ class Prediction:
     @property
     def confident(self) -> bool:
         return self.genus is not None
+
+    @property
+    def status(self) -> str:
+        """confident (≥ CONFIDENCE_THRESHOLD) / unsure / not_found (< NOT_FOUND_THRESHOLD: ไม่น่าใช่กระบองเพชร 7 สกุล)"""
+        if self.confident:
+            return "confident"
+        return "unsure" if self.confidence >= NOT_FOUND_THRESHOLD else "not_found"
 
     @property
     def subclass(self) -> str | None:
