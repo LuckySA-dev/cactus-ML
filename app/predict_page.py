@@ -52,6 +52,13 @@ CSS = """
 .tag.none .th {color:#5b6a5c; font-size:1.6rem;}
 .step-h {font-weight:700; font-size:1.05rem; margin:6px 0 2px;}
 .hist {font-size:.8rem; line-height:1.3; color:#3d4a3e; text-align:center;}
+/* รูปที่ใส่: กว้างไม่เกินคอลัมน์ (มือถือไม่ล้นจอ) · รูปแนวตั้งสูงไม่เกินครึ่งจอ ผลจะได้ขึ้นเร็ว */
+.st-key-preview img {width:auto !important; max-width:100% !important; max-height:50vh; height:auto;
+                     object-fit:contain; display:block; margin:0 auto; border-radius:12px;
+                     outline:1px solid rgba(0,0,0,.08); outline-offset:-1px;}
+/* กันอะไรก็ตามดันหน้าจอให้เลื่อนแนวนอนบนมือถือ */
+[data-testid="stMainBlockContainer"] {overflow-x:hidden;}
+.tag .th, .care-head h3 {overflow-wrap:anywhere; text-wrap:balance;}
 /* สถานะการทาย: แดง = input · เหลือง = process · เขียว = output */
 .stage {display:flex; align-items:center; gap:12px; margin:10px 0 4px; padding:12px 14px; background:#fff;
         border:1px solid #d3d8c6; border-left:5px solid var(--c); border-radius:12px;}
@@ -245,7 +252,7 @@ def how_to() -> None:
     st.caption("รู้จัก 7 สกุล: " + " ".join(CLASS_TH[g] for g in CLASSES))
 
 
-INPUT_MODES = ["📁 อัปโหลด / ถ่ายด้วยมือถือ", "📷 กล้องในหน้าเว็บ"]
+INPUT_MODES = ["📁 อัปโหลด / ถ่ายรูป", "📷 กล้องในเว็บ"]   # สั้นพอให้ 2 ปุ่มอยู่แถวเดียวบนจอ 320px
 
 
 def pick_image() -> tuple[Image.Image | None, str]:
@@ -333,7 +340,8 @@ with left:
     status = st.empty()                                   # การ์ดสถานะอยู่ใต้ช่องใส่รูปทันที
     model, compare_all = pick_model()
     if image is not None:
-        st.image(image, caption=name, width=360)          # ย่อพอดูได้ บนมือถือผลจะได้ขึ้นเร็ว ไม่ต้องเลื่อนไกล
+        with st.container(key="preview"):                 # ขนาดคุมด้วย CSS .st-key-preview (responsive)
+            st.image(image, caption=name, width="stretch")
         st.button("↺ เลือกรูปอื่น", on_click=reset, width="stretch")
 with right:
     if image is None:
