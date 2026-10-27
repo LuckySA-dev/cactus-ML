@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import csv
 import html
+import time
 from urllib.parse import unquote, urlparse
 
 import pillow_heif
@@ -51,6 +52,25 @@ CSS = """
 .tag.none .th {color:#5b6a5c; font-size:1.6rem;}
 .step-h {font-weight:700; font-size:1.05rem; margin:6px 0 2px;}
 .hist {font-size:.8rem; line-height:1.3; color:#3d4a3e; text-align:center;}
+/* สถานะการทาย: แดง = input · เหลือง = process · เขียว = output */
+.stage {display:flex; align-items:center; gap:12px; margin:10px 0 4px; padding:12px 14px; background:#fff;
+        border:1px solid #d3d8c6; border-left:5px solid var(--c); border-radius:12px;}
+.stage .cac {font-size:1.7rem; line-height:1; display:inline-block; transform-origin:50% 90%;
+             animation:wiggle 1.2s ease-in-out infinite;}
+.stage.done .cac {animation:pop .35s ease-out 1;}
+.stage .body {flex:1; min-width:0;}
+.stage .row {display:flex; justify-content:space-between; gap:8px; font-weight:600; color:#1d2a1f;}
+.stage .pct {font-variant-numeric:tabular-nums; color:var(--c);}
+.stage .bar {height:8px; margin-top:6px; border-radius:999px; background:#ecebe3; overflow:hidden;}
+.stage .bar i {display:block; height:100%; width:var(--p); background:var(--c); border-radius:999px;
+               transition-property:width; transition-duration:.3s; transition-timing-function:ease-out;}
+.stage .dots {display:flex; gap:6px; margin-top:7px; font-size:.78rem; color:#5b6a5c;}
+.stage .dots span {display:flex; align-items:center; gap:4px;}
+.stage .dots b {width:9px; height:9px; border-radius:50%; background:#d3d8c6;}
+.stage .dots .on b {background:var(--dc);}
+@keyframes wiggle {0%,100% {transform:rotate(-8deg);} 50% {transform:rotate(8deg);}}
+@keyframes pop {0% {transform:scale(.6); opacity:.4;} 70% {transform:scale(1.15);} 100% {transform:scale(1);}}
+@media (prefers-reduced-motion: reduce) {.stage .cac {animation:none;} .stage .bar i {transition:none;}}
 .tag .la {font-style:italic; color:#5b6a5c;}
 .tag .sp {display:inline-block; margin-top:8px; padding:3px 12px; border-radius:999px; background:#e8e4d6;
           color:#1d2a1f; font-weight:600;}
@@ -254,6 +274,21 @@ def pick_model() -> tuple[str, bool]:
     return model, compare_all
 
 
+STAGES = [("รับรูป", "#c0392b"), ("ทำนาย", "#b7791f"), ("ผลลัพธ์", "#2f6b3a")]   # แดง input · เหลือง process · เขียว output
+STAGE_MIN_SEC = 0.35          # ponytail: โมเดลทายเร็ว (~0.1 วิ) ค้างแต่ละขั้นไว้ให้ผู้ใช้เห็น · ตั้ง 0 ถ้าไม่ต้องการ
+
+
+def stage_card(slot, step: int, pct: int, text: str, done: bool = False) -> None:
+    """การ์ดสถานะในช่องใส่รูป: ข้อความ + % + แถบสีตามขั้น + จุด 3 ขั้น (ข้อความทั้งหมดมาจากโค้ด ไม่ใช่ผู้ใช้)"""
+    color = STAGES[step][1]
+    dots = "".join(f'<span class="{"on" if i <= step else ""}" style="--dc:{c}"><b></b>{n}</span>'
+                   for i, (n, c) in enumerate(STAGES))
+    slot.markdown(f'<div class="stage{" done" if done else ""}" style="--c:{color}; --p:{pct}%">'
+                  f'<span class="cac">🌵</span><div class="body"><div class="row"><span>{text}</span>'
+                  f'<span class="pct">{pct}%</span></div><div class="bar"><i></i></div>'
+                  f'<div class="dots">{dots}</div></div></div>', unsafe_allow_html=True)
+
+
 def remember(name: str, model: str, image: Image.Image, pred: Prediction) -> None:
     """เก็บผลไว้ในรอบใช้งานนี้ (หน่วยความจำของเบราว์เซอร์นี้เท่านั้น ไม่บันทึกลงเซิร์ฟเวอร์) · ล่าสุดอยู่หน้า"""
     key = (name, model, image.size)
@@ -289,6 +324,7 @@ st.caption("ถ่ายรูปหรืออัปโหลดรูปต�
 left, right = st.columns([5, 7], gap="large")
 with left:
     image, name = pick_image()
+    status = st.empty()                                   # การ์ดสถานะอยู่ใต้ช่องใส่รูปทันที
     model, compare_all = pick_model()
     if image is not None:
         st.image(image, caption=name, width=360)          # ย่อพอดูได้ บนมือถือผลจะได้ขึ้นเร็ว ไม่ต้องเลื่อนไกล
@@ -297,14 +333,28 @@ with right:
     if image is None:
         how_to()
     else:
+        # เล่นขั้นตอนเฉพาะตอนรูป/โมเดลเปลี่ยน · rerun อื่น (เปิด expander, toggle) แสดงสถานะเสร็จเลย
+        fresh = st.session_state.get("last_run") != (name, model, image.size)
+        pause = STAGE_MIN_SEC if fresh else 0
+        if fresh:
+            stage_card(status, 0, 15, "กำลังเตรียมรูป")
+            time.sleep(pause)
         try:
             predictor = get_predictor(model)
         except (Exception, SystemExit):    # ไม่มี checkpoint / LFS ยังไม่ดึง (ได้แค่ไฟล์ pointer)
+            status.empty()
             st.error("โหลดโมเดลไม่ได้ — ตรวจว่ามีไฟล์ใน checkpoints/ (repo นี้เก็บโมเดลด้วย Git LFS)")
             st.stop()
-        with st.spinner("กำลังดู…"):
-            result = predictor.predict(image)
+        if fresh:
+            stage_card(status, 1, 45, f"{MODEL_NAMES[model]} กำลังทำนาย")
+        result = predictor.predict(image)
+        if fresh:
+            time.sleep(pause)
+            stage_card(status, 2, 85, "ใกล้เสร็จแล้ว")
+            time.sleep(pause)
         remember(name, model, image, result)
+        st.session_state.last_run = (name, model, image.size)
+        stage_card(status, 2, 100, "ทำนายเสร็จแล้ว", done=True)
         if result.status == "not_found":
             not_found_card()
         else:
