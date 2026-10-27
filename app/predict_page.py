@@ -125,8 +125,14 @@ def model_label(key: str) -> str:
 
 
 @st.cache_resource(show_spinner="กำลังโหลดโมเดล…")
-def get_predictor(model_key: str) -> Predictor:
+def get_predictor(model_key: str, code_version: int) -> Predictor:
+    """code_version = id(Prediction): src/predict.py ถูกโหลดใหม่ (เช่น deploy โค้ดใหม่บน Cloud) → id เปลี่ยน
+    → cache สร้างใหม่ · ถ้าไม่มี Predictor เก่าใน cache จะคืน Prediction รุ่นเก่า (ไม่มี .status) แล้วแอปพัง"""
     return Predictor(best_run(model_key))
+
+
+def predictor_for(model_key: str) -> Predictor:
+    return get_predictor(model_key, id(Prediction))
 
 
 def confidence_word(p: float) -> str:
@@ -214,7 +220,7 @@ def why_section(predictor: Predictor, image: Image.Image, pred: Prediction) -> N
 def compare_models(image: Image.Image) -> None:
     rows = []
     for key in APP_MODELS:
-        p = get_predictor(key).predict(image)
+        p = predictor_for(key).predict(image)
         genus, prob = p.topk[0]
         found = p.status != "not_found"
         rows.append({"โมเดล": model_label(key), "สกุล": CLASS_TH[genus] if found else "ไม่พบกระบองเพชร",
@@ -340,7 +346,7 @@ with right:
             stage_card(status, 0, 15, "กำลังเตรียมรูป")
             time.sleep(pause)
         try:
-            predictor = get_predictor(model)
+            predictor = predictor_for(model)
         except (Exception, SystemExit):    # ไม่มี checkpoint / LFS ยังไม่ดึง (ได้แค่ไฟล์ pointer)
             status.empty()
             st.error("โหลดโมเดลไม่ได้ — ตรวจว่ามีไฟล์ใน checkpoints/ (repo นี้เก็บโมเดลด้วย Git LFS)")
